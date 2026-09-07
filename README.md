@@ -1,4 +1,4 @@
-# RE:MED
+# RxRecheck
 
 RxRecheck is a medication-review web app prototype designed to help healthcare professionals and patients review medications prescribed to older adults.
 
