@@ -1,10 +1,10 @@
 # RE:MED
 
-RE:MED is a medication-review web app prototype designed to help healthcare professionals and patients review medications prescribed to older adults.
+RxRecheck is a medication-review web app prototype designed to help healthcare professionals and patients review medications prescribed to older adults.
 
 ## GitHub Pages
 
-1. Create a GitHub repository, for example `REMED`.
+1. Create a GitHub repository, for example `RxRecheck`.
 2. Upload the contents of this folder to the repository root.
 3. Push the files to the `main` branch.
 4. Go to **Settings → Pages**.
