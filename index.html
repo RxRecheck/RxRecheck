@@ -19,7 +19,7 @@
   #loginScreen {
     position: fixed;
     inset: 0;
-    background: #0f1c2e;
+    background: #0b1727;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -28,75 +28,104 @@
   }
   .login-card {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 18px;
     width: 100%;
-    max-width: 440px;
-    padding: 36px 32px;
-    box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+    max-width: 420px;
+    padding: 34px 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
   }
-  .login-header {
+  .login-brand {
     text-align: center;
     margin-bottom: 24px;
   }
-  .login-header h2 {
-    margin: 0 0 6px;
+  .login-brand h2 {
     font-size: 26px;
-    color: #10243e;
+    color: #0f2744;
+    margin: 6px 0 4px;
     font-weight: 800;
   }
-  .login-header p {
-    margin: 0;
+  .login-brand p {
     font-size: 13px;
     color: #64748b;
+    margin: 0;
   }
-  .login-brand-tag {
+  .login-badge {
     display: inline-block;
-    color: #205d91;
-    background: #edf5ff;
+    padding: 4px 10px;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    margin-bottom: 12px;
+    color: #1e5a8a;
+    background: #e9f2fa;
+    border-radius: 20px;
   }
-  .login-form .form-field {
-    margin-bottom: 16px;
+  .login-group {
+    margin-bottom: 15px;
   }
-  .login-form label {
+  .login-group label {
     display: block;
     font-size: 12px;
     font-weight: 700;
     color: #334155;
     margin-bottom: 6px;
   }
-  .login-form input {
+  .login-group input {
     width: 100%;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    padding: 11px 14px;
+    border-radius: 9px;
+    padding: 11px 13px;
+    font-size: 14px;
     outline: none;
-    font-size: 14px;
-    transition: border-color 0.2s;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
   }
-  .login-form input:focus {
-    border-color: #205d91;
-    box-shadow: 0 0 0 3px rgba(32,93,145,0.12);
+  .login-group input:focus {
+    border-color: #1e5a8a;
+    box-shadow: 0 0 0 3px rgba(30, 90, 138, 0.12);
   }
-  .login-btn {
-    width: 100%;
-    padding: 13px;
-    background: #173d63;
-    color: white;
-    border: 0;
-    border-radius: 10px;
+  .code-container {
+    display: flex;
+    gap: 8px;
+  }
+  .code-container input {
+    flex: 1;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .code-btn {
+    white-space: nowrap;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #1e5a8a;
     font-weight: 700;
-    font-size: 14px;
-    margin-top: 8px;
-    transition: background 0.2s;
+    font-size: 12px;
+    border-radius: 9px;
+    padding: 0 14px;
+    cursor: pointer;
+    transition: background 0.15s;
   }
-  .login-btn:hover {
-    background: #1e4d7b;
+  .code-btn:hover {
+    background: #edf5ff;
+  }
+  .code-hint {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 5px;
+  }
+  .login-submit-btn {
+    width: 100%;
+    background: #10243e;
+    color: #ffffff;
+    border: 0;
+    border-radius: 9px;
+    padding: 13px;
+    font-weight: 750;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s ease;
+  }
+  .login-submit-btn:hover {
+    background: #1b385e;
   }
 
   /* Main Application Styles */
@@ -196,6 +225,21 @@
     margin-top:13px; padding:13px; border-radius:11px; background:#fffaf1;
     border:1px solid #ead9bd; font-size:11px; line-height:1.5; color:#5f5444;
   }
+  .history-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .history-item:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+  }
   .hidden { display:none !important; }
   @media(max-width:850px) {
     .sidebar { position:static; width:100%; height:auto; }
@@ -210,28 +254,36 @@
 </head>
 <body>
 
-<!-- Login Overlay Screen -->
+<!-- Login / Verification Overlay Screen -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="login-header">
-      <span class="login-brand-tag">CLINICAL WORKSPACE</span>
+    <div class="login-brand">
+      <span class="login-badge">SECURE WORKSPACE</span>
       <h2>RxRecheck</h2>
-      <p>Sign in to access prescription verification & clinical reviews</p>
+      <p>Enter your credentials and verification code</p>
     </div>
-    <form class="login-form" onsubmit="handleLogin(event)">
-      <div class="form-field">
+    <form onsubmit="handleLogin(event)">
+      <div class="login-group">
         <label for="loginName">Full Name</label>
-        <input type="text" id="loginName" placeholder="Dr. John Doe / Reviewer Name" required autocomplete="name">
+        <input type="text" id="loginName" required autocomplete="name">
       </div>
-      <div class="form-field">
+      <div class="login-group">
         <label for="loginEmail">Email Address</label>
-        <input type="email" id="loginEmail" placeholder="reviewer@rxrecheck.org" required autocomplete="email">
+        <input type="email" id="loginEmail" required autocomplete="email">
       </div>
-      <div class="form-field">
+      <div class="login-group">
         <label for="loginPass">Password</label>
-        <input type="password" id="loginPass" placeholder="••••••••" required autocomplete="current-password">
+        <input type="password" id="loginPass" required autocomplete="current-password">
       </div>
-      <button type="submit" class="login-btn">Sign In to RxRecheck</button>
+      <div class="login-group">
+        <label for="loginCode">Verification Code</label>
+        <div class="code-container">
+          <input type="text" id="loginCode" maxlength="8" required autocomplete="one-time-code">
+          <button type="button" class="code-btn" onclick="generateDemoCode()">Get Code</button>
+        </div>
+        <div class="code-hint" id="codeHint">Click "Get Code" or type your assigned verification code.</div>
+      </div>
+      <button type="submit" class="login-submit-btn">Verify & Sign In</button>
     </form>
   </div>
 </div>
@@ -247,6 +299,7 @@
       <div class="step" data-step="3"><span class="num">3</span>Current Signals</div>
       <div class="step" data-step="4"><span class="num">4</span>RxRecheck Analysis</div>
       <div class="step" data-step="5"><span class="num">5</span>Clinical Review</div>
+      <div class="step" data-step="6"><span class="num">6</span>Stored Records</div>
     </div>
   </aside>
 
@@ -255,6 +308,7 @@
       <strong>Medication Review Workspace</strong>
       <div class="topbar-right">
         <span class="badge" id="userBadge">Authenticated Session</span>
+        <button class="btn secondary" style="padding:6px 11px;font-size:11px" onclick="setStep(6)">View Stored Records</button>
         <button class="btn secondary" style="padding:6px 11px;font-size:11px" onclick="handleLogout()">Sign out</button>
       </div>
     </div>
@@ -272,14 +326,14 @@
           <h2>Patient baseline context</h2>
           <p>Enter patient clinical information manually to interpret the medication regimen in context.</p>
           <div class="grid">
-            <div><label>Patient ID / initials</label><input id="pid" placeholder="Enter Patient ID / initials"></div>
-            <div><label>Age (years)</label><input id="age" type="number" placeholder="Enter age in years"></div>
+            <div><label>Patient ID / initials</label><input id="pid"></div>
+            <div><label>Age (years)</label><input id="age" type="number"></div>
             <div><label>Biological sex</label><select id="sex"><option value="">Select...</option><option>Female</option><option>Male</option><option>Other / not specified</option></select></div>
-            <div><label>Kidney function</label><input id="kidney" placeholder="Enter status (e.g. eGFR / serum creatinine)"></div>
-            <div><label>Liver function</label><input id="liver" placeholder="Enter status (e.g. LFTs / enzymes)"></div>
+            <div><label>Kidney function</label><input id="kidney"></div>
+            <div><label>Liver function</label><input id="liver"></div>
             <div><label>History of falls</label><select id="falls"><option>None reported</option><option>One or more falls</option><option>Near falls / unsteady gait</option></select></div>
           </div>
-          <div style="margin-top:15px"><label>Existing medical conditions</label><textarea id="conditions" placeholder="Enter confirmed medical conditions and diagnoses..."></textarea></div>
+          <div style="margin-top:15px"><label>Existing medical conditions</label><textarea id="conditions"></textarea></div>
           <div class="actions"><button class="btn primary" onclick="next(2)">Continue →</button></div>
         </div>
       </section>
@@ -296,10 +350,10 @@
           <div id="medForm" class="risk hidden" style="margin-bottom:16px">
             <h3 id="medFormTitle">Add medication</h3>
             <div class="grid three" style="margin-top:12px">
-              <div><label>Medication name & strength</label><input id="mName" placeholder="Enter medication and dose"></div>
-              <div><label>Indication / Purpose</label><input id="mPurpose" placeholder="Enter purpose / indication"></div>
+              <div><label>Medication name & strength</label><input id="mName"></div>
+              <div><label>Indication / Purpose</label><input id="mPurpose"></div>
               <div><label>Date started</label><input id="mStarted" type="month"></div>
-              <div><label>Prescribing source</label><input id="mSource" placeholder="Prescribing unit or department"></div>
+              <div><label>Prescribing source</label><input id="mSource"></div>
               <div><label>Status</label><select id="mStatus"><option>Active</option><option>Stopped</option><option>On hold</option></select></div>
             </div>
             <div class="actions" style="margin-top:12px"><button class="btn secondary" onclick="toggleMedForm()">Cancel</button><button class="btn primary" onclick="submitMedication()">Save medication</button></div>
@@ -313,7 +367,7 @@
         </div>
       </section>
 
-      <!-- Step 3: Current Signals (BP in mm of Hg & Pulse in bpm) -->
+      <!-- Step 3: Current Signals -->
       <section id="screen3" class="screen hidden">
         <div class="card">
           <h2>What is happening now?</h2>
@@ -329,19 +383,19 @@
             <label class="symptom"><input type="checkbox" value="Near falls"> Near falls</label>
             <label class="symptom"><input type="checkbox" value="Other concern"> Other concern</label>
           </div>
-          <div style="margin-top:18px"><label>Caregiver / clinical observations</label><textarea id="observations" placeholder="Describe symptoms, patient complaints, or changes noticed..."></textarea></div>
+          <div style="margin-top:18px"><label>Caregiver / clinical observations</label><textarea id="observations"></textarea></div>
           <div class="grid three" style="margin-top:15px">
             <div>
               <label>Blood pressure (mm of Hg)</label>
-              <input id="bp" placeholder="e.g. 120/80 mm of Hg">
+              <input id="bp">
             </div>
             <div>
               <label>Pulse / Heart rate (bpm)</label>
-              <input id="hr" placeholder="e.g. 72 bpm">
+              <input id="hr">
             </div>
             <div>
               <label>Other vital / signal</label>
-              <input id="vital" placeholder="e.g. SpO2, blood glucose">
+              <input id="vital">
             </div>
           </div>
           <div class="actions"><button class="btn secondary" onclick="next(2)">← Back</button><button class="btn primary" onclick="analyze()">Analyze with RxRecheck →</button></div>
@@ -447,7 +501,7 @@
             <div>
               <div class="risk">
                 <h3>Observations & Context</h3>
-                <p id="caregiverText">No observations documented yet. Enter notes on Step 3 for review discussion.</p>
+                <p id="caregiverText">No observations documented yet.</p>
               </div>
               <div class="risk">
                 <h3>Key clinical queries</h3>
@@ -459,9 +513,32 @@
             </div>
           </div>
           <div class="notice"><strong>RxRecheck principle:</strong> Before adding another medication, rethink the medications already there. This tool assists clinical review and does not replace licensed medical judgment.</div>
-          <div class="actions"><button class="btn secondary" onclick="next(4)">← Back to Analysis</button><button class="btn primary" onclick="restart()">Start New Review</button></div>
+          <div class="actions">
+            <button class="btn secondary" onclick="next(4)">← Back to Analysis</button>
+            <button class="btn secondary" onclick="saveReview()">Save to Stored Records</button>
+            <button class="btn primary" onclick="restart()">Start New Review</button>
+          </div>
         </div>
       </section>
+
+      <!-- Step 6: Stored Records Screen -->
+      <section id="screen6" class="screen hidden">
+        <div class="card">
+          <h2>Stored Patient Review Records</h2>
+          <p>Saved patient records and reviews stored locally for historical reference and future clinical follow-up.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+            <span style="font-size:13px; color:#64748b" id="recordCountLabel">0 stored records</span>
+            <button class="btn danger" style="padding:7px 12px;font-size:12px" onclick="clearAllStoredRecords()">Clear All Records</button>
+          </div>
+          <div id="recordsListContainer">
+            <p style="color:#94a3b8; font-size:13px; font-style:italic">No patient reviews have been stored yet. Click "Save review" on any patient record to store here.</p>
+          </div>
+          <div class="actions" style="margin-top:20px">
+            <button class="btn primary" onclick="setStep(1)">← Back to Review Workspace</button>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 </div>
@@ -472,7 +549,8 @@ const titles = {
   2:["Medication Timeline","See how medications accumulated over time and where decisions may intersect."],
   3:["Current Signals","Capture symptoms and observations that may help interpret the medication picture."],
   4:["RxRecheck Analysis","Review explainable medication patterns for professional clinical discussion."],
-  5:["Clinical Review","Turn the analysis into focused questions for a qualified healthcare professional."]
+  5:["Clinical Review","Turn the analysis into focused questions for a qualified healthcare professional."],
+  6:["Stored Records","View and retrieve saved clinical reviews for future reference."]
 };
 
 let meds=[]; 
@@ -480,14 +558,23 @@ let editingIndex=-1;
 
 function $(id){return document.getElementById(id)}
 
+// Quick Code Generator for Demo / Testing
+function generateDemoCode(){
+  const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+  $('loginCode').value = randomCode;
+  $('codeHint').textContent = `Generated code: ${randomCode} (Ready to verify)`;
+  $('codeHint').style.color = "#166534";
+}
+
 // Authentication Handling
 function handleLogin(e){
   e.preventDefault();
   const name=$('loginName').value.trim();
   const email=$('loginEmail').value.trim();
   const pass=$('loginPass').value;
-  if(!name || !email || !pass){
-    alert('Please fill out Name, Email, and Password.');
+  const code=$('loginCode').value.trim();
+  if(!name || !email || !pass || !code){
+    alert('Please enter your Name, Email, Password, and Verification Code.');
     return;
   }
   const user={name, email};
@@ -520,6 +607,9 @@ function handleLogout(){
     $('loginName').value='';
     $('loginEmail').value='';
     $('loginPass').value='';
+    $('loginCode').value='';
+    $('codeHint').textContent='Click "Get Code" or type your assigned verification code.';
+    $('codeHint').style.color='#64748b';
     $('loginScreen').classList.remove('hidden');
   }
 }
@@ -528,6 +618,7 @@ function setStep(n){
  document.querySelectorAll('.screen').forEach((el,i)=>el.classList.toggle('hidden',i!==n-1));
  document.querySelectorAll('.step').forEach(el=>el.classList.toggle('active',+el.dataset.step===n));
  $('pageTitle').textContent=titles[n][0]; $('pageSubtitle').textContent=titles[n][1];
+ if(n===6) renderStoredRecords();
  window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -643,8 +734,8 @@ function buildAnalysis(){
  // Signals display
  let signalsText=[];
  if(symptoms.length) signalsText.push(`Reported symptoms: ${symptoms.join(', ')}`);
- if(bpVal) signalsText.push(`Blood Pressure: ${bpVal}`);
- if(hrVal) signalsText.push(`Pulse / Heart Rate: ${hrVal}`);
+ if(bpVal) signalsText.push(`Blood Pressure: ${bpVal} mm of Hg`);
+ if(hrVal) signalsText.push(`Pulse / Heart Rate: ${hrVal} bpm`);
  if(vitalVal) signalsText.push(`Additional vitals: ${vitalVal}`);
  $('symptomResult').textContent=signalsText.length ? signalsText.join(' | ') : 'No symptoms or vital signs were recorded during baseline review.';
 
@@ -683,62 +774,139 @@ function showReasoning(){
   $('reasoningPanel').classList.toggle('hidden');
 }
 
-function saveReview(){
- const data=collectReview();
- localStorage.setItem('rxReviewData', JSON.stringify(data));
- alert('Review data saved locally in your browser.');
-}
-
+// Stored Data Management (for future review and historical tracking)
 function collectReview(){
  return {
+   id: 'REV-' + Date.now(),
    patient:{
-     id:$('pid').value, age:$('age').value, sex:$('sex').value,
-     kidney:$('kidney').value, liver:$('liver').value, falls:$('falls').value,
-     conditions:$('conditions').value
+     id:$('pid').value.trim(), age:$('age').value.trim(), sex:$('sex').value,
+     kidney:$('kidney').value.trim(), liver:$('liver').value.trim(), falls:$('falls').value,
+     conditions:$('conditions').value.trim()
    },
    medications:meds,
    signals:getSymptoms(),
-   observations:$('observations').value,
-   bp:$('bp').value,
-   hr:$('hr').value,
-   vital:$('vital').value,
-   savedAt:new Date().toISOString()
+   observations:$('observations').value.trim(),
+   bp:$('bp').value.trim(),
+   hr:$('hr').value.trim(),
+   vital:$('vital').value.trim(),
+   savedAt:new Date().toLocaleString()
  };
 }
 
-function restoreReview(){
- try{
-   const d=JSON.parse(localStorage.getItem('rxReviewData'));
+function saveReview(){
+ const review = collectReview();
+ if(!review.patient.id && meds.length===0){
+   alert('Please enter at least a Patient ID or medications before saving.');
+   return;
+ }
+ let saved = [];
+ try {
+   saved = JSON.parse(localStorage.getItem('rxSavedReviews') || '[]');
+ } catch(e){ saved = []; }
+ saved.unshift(review);
+ localStorage.setItem('rxSavedReviews', JSON.stringify(saved));
+ alert('Patient review record saved successfully for future clinical reference.');
+ renderStoredRecords();
+}
+
+function renderStoredRecords(){
+ const container = $('recordsListContainer');
+ const countLabel = $('recordCountLabel');
+ let saved = [];
+ try {
+   saved = JSON.parse(localStorage.getItem('rxSavedReviews') || '[]');
+ } catch(e){ saved = []; }
+
+ countLabel.textContent = `${saved.length} stored record${saved.length===1?'':'s'}`;
+ if(saved.length === 0){
+   container.innerHTML = '<p style="color:#94a3b8; font-size:13px; font-style:italic">No patient reviews have been stored yet. Click "Save review" on any patient record to store here.</p>';
+   return;
+ }
+
+ container.innerHTML = saved.map((r, idx) => `
+   <div class="history-item">
+     <div>
+       <strong>Patient: ${esc(r.patient.id || 'Unnamed')}</strong> (${esc(r.patient.age ? r.patient.age + ' yrs' : 'Age not recorded')}) · <span style="color:#64748b; font-size:12px">${esc(r.savedAt)}</span>
+       <div style="font-size:12px; color:#475467; margin-top:4px">
+         ${r.medications ? r.medications.length : 0} medications · BP: ${esc(r.bp || '—')} mm of Hg · Pulse: ${esc(r.hr || '—')} bpm
+       </div>
+       <div style="font-size:11px; color:#64748b; margin-top:3px">
+         Conditions: ${esc(r.patient.conditions || 'None noted')}
+       </div>
+     </div>
+     <div style="display:flex; gap:6px">
+       <button class="btn secondary" style="padding:6px 11px; font-size:11px" onclick="loadStoredRecord(${idx})">Load & View</button>
+       <button class="btn secondary danger" style="padding:6px 9px; font-size:11px" onclick="deleteStoredRecord(${idx})">Delete</button>
+     </div>
+   </div>
+ `).join('');
+}
+
+function loadStoredRecord(index){
+ try {
+   const saved = JSON.parse(localStorage.getItem('rxSavedReviews') || '[]');
+   const d = saved[index];
    if(!d) return;
-   Object.entries(d.patient||{}).forEach(([k,v])=>{if($(k))$(k).value=v||''});
-   meds=d.medications||[];
+
+   // Populate form fields
+   $('pid').value = d.patient.id || '';
+   $('age').value = d.patient.age || '';
+   $('sex').value = d.patient.sex || '';
+   $('kidney').value = d.patient.kidney || '';
+   $('liver').value = d.patient.liver || '';
+   $('falls').value = d.patient.falls || 'None reported';
+   $('conditions').value = d.patient.conditions || '';
+
+   meds = d.medications || [];
    renderMeds();
-   (d.signals||[]).forEach(x=>{
-     const c=[...document.querySelectorAll('#screen3 input[type=checkbox]')].find(c=>c.value===x);
-     if(c) c.checked=true;
+
+   document.querySelectorAll('#screen3 input[type=checkbox]').forEach(c => {
+     c.checked = (d.signals || []).includes(c.value);
    });
-   $('observations').value=d.observations||'';
-   $('bp').value=d.bp||'';
-   $('hr').value=d.hr||'';
-   $('vital').value=d.vital||'';
- }catch(e){
-   console.warn(e);
+
+   $('observations').value = d.observations || '';
+   $('bp').value = d.bp || '';
+   $('hr').value = d.hr || '';
+   $('vital').value = d.vital || '';
+
+   setStep(1);
+   alert(`Loaded record for Patient ${d.patient.id || 'Unnamed'}. You can navigate through steps or re-run analysis.`);
+ } catch(e){
+   alert('Failed to load record: ' + e.message);
+ }
+}
+
+function deleteStoredRecord(index){
+ if(confirm('Delete this stored patient record?')){
+   let saved = JSON.parse(localStorage.getItem('rxSavedReviews') || '[]');
+   saved.splice(index, 1);
+   localStorage.setItem('rxSavedReviews', JSON.stringify(saved));
+   renderStoredRecords();
+ }
+}
+
+function clearAllStoredRecords(){
+ if(confirm('Are you sure you want to delete ALL stored records? This cannot be undone.')){
+   localStorage.removeItem('rxSavedReviews');
+   renderStoredRecords();
  }
 }
 
 function restart(){
- if(confirm('Start a new patient review? This will clear current entries.')){
-   localStorage.removeItem('rxReviewData');
-   location.reload();
+ if(confirm('Start a new patient review? This will clear current screen entries.')){
+   $('pid').value=''; $('age').value=''; $('sex').value=''; $('kidney').value=''; $('liver').value=''; $('conditions').value='';
+   meds=[]; renderMeds();
+   document.querySelectorAll('#screen3 input[type=checkbox]').forEach(c=>c.checked=false);
+   $('observations').value=''; $('bp').value=''; $('hr').value=''; $('vital').value='';
+   setStep(1);
  }
 }
 
 // Attach step navigation
 document.querySelectorAll('.step').forEach(el=>el.addEventListener('click',()=>setStep(+el.dataset.step)));
 
-// Initialize with clean manual entry
+// Initialize
 renderMeds();
-restoreReview();
 checkUserSession();
 setStep(1);
 </script>
