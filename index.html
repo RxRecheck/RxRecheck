@@ -3,729 +3,463 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RxRecheck — Clinical Medication Review</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>RxRecheck — Prescription Verification & Review</title>
 <style>
-  :root {
-    --bg-base: #f8fafc;
-    --bg-surface: #ffffff;
-    --border-subtle: #e2e8f0;
-    --border-focus: #3b82f6;
-    --primary: #1e3a8a;
-    --primary-hover: #172554;
-    --primary-light: #eff6ff;
-    --primary-accent: #2563eb;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --danger: #ef4444;
-    --warning-bg: #fffbeb;
-    --warning-border: #fef3c7;
-    --warning-text: #92400e;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-    --radius-lg: 16px;
-    --radius-md: 10px;
-    --radius-sm: 6px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  
+  * { box-sizing: border-box; }
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background: var(--bg-base);
-    color: var(--text-main);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f7fb;
+    color: #172033;
   }
+  button, input, textarea, select { font: inherit; }
+  button { cursor: pointer; }
 
-  button, input, textarea, select { font: inherit; color: inherit; }
-  button { cursor: pointer; border: none; background: none; }
-
-  .app-layout {
-    display: flex;
-    min-height: 100vh;
-  }
-
-  /* Modern Sidebar */
-  .sidebar {
-    width: 280px;
-    background: #091224;
-    color: #f8fafc;
-    padding: 32px 24px;
-    display: flex;
-    flex-direction: column;
+  /* Login Overlay Screen */
+  #loginScreen {
     position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 50;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  .brand-wrapper {
+    inset: 0;
+    background: #0f1c2e;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-
-  .brand-logo {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    border-radius: var(--radius-md);
-    display: grid;
-    place-items: center;
-    color: white;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-  }
-
-  .brand-text h1 {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: #ffffff;
-    line-height: 1.1;
-  }
-
-  .brand-text span {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: #94a3b8;
-    text-transform: uppercase;
-  }
-
-  .nav-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex: 1;
-  }
-
-  .step-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    border-radius: var(--radius-md);
-    color: #94a3b8;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .step-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #f1f5f9;
-  }
-
-  .step-item.active {
-    background: rgba(37, 99, 235, 0.15);
-    color: #60a5fa;
-    border: 1px solid rgba(96, 165, 250, 0.2);
-  }
-
-  .step-index {
-    width: 26px;
-    height: 26px;
-    border-radius: var(--radius-sm);
-    display: grid;
-    place-items: center;
-    font-size: 12px;
-    font-weight: 700;
-    background: rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
-    transition: all 0.2s;
-  }
-
-  .step-item.active .step-index {
-    background: #2563eb;
-    color: #ffffff;
-    box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
-  }
-
-  /* Main View Area */
-  .main-wrapper {
-    margin-left: 280px;
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .top-header {
-    height: 72px;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 40px;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-  }
-
-  .system-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-muted);
-  }
-
-  .content-container {
-    max-width: 1080px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 40px;
-  }
-
-  .header-section {
-    margin-bottom: 32px;
-  }
-
-  .header-section h2 {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-  }
-
-  .header-section p {
-    color: var(--text-muted);
-    font-size: 15px;
-  }
-
-  /* Modern Card & Components */
-  .modern-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 32px;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 24px;
-  }
-
-  .card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-
-  .card-head h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-main);
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  .form-grid.three-cols {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .full-width {
-    grid-column: 1 / -1;
-  }
-
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .input-group label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #334155;
-  }
-
-  input, select, textarea {
-    width: 100%;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 12px 14px;
-    background: #fdfdfd;
-    font-size: 14px;
-    transition: all 0.15s ease;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    outline: none;
-    background: #ffffff;
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-  }
-
-  textarea {
-    min-height: 100px;
-    resize: vertical;
-  }
-
-  .btn {
-    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 12px 20px;
-    border-radius: var(--radius-md);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+    padding: 20px;
   }
-
-  .btn-primary {
-    background: var(--primary-accent);
-    color: #ffffff;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
-  }
-
-  .btn-primary:hover {
-    background: #1d4ed8;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-  }
-
-  .btn-secondary {
-    background: #f1f5f9;
-    color: #475569;
-  }
-
-  .btn-secondary:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-  }
-
-  .actions-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 32px;
-  }
-
-  /* Table styling */
-  .table-responsive {
-    overflow-x: auto;
-    margin-top: 16px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-subtle);
-  }
-
-  .modern-table {
+  .login-card {
+    background: #ffffff;
+    border-radius: 20px;
     width: 100%;
-    border-collapse: collapse;
+    max-width: 440px;
+    padding: 36px 32px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+  }
+  .login-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .login-header h2 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    color: #10243e;
+    font-weight: 800;
+  }
+  .login-header p {
+    margin: 0;
     font-size: 13px;
-    text-align: left;
+    color: #64748b;
   }
-
-  .modern-table th {
-    background: #f8fafc;
-    padding: 12px 16px;
-    font-weight: 600;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .modern-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .modern-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .badge-pill {
+  .login-brand-tag {
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 9999px;
+    color: #205d91;
+    background: #edf5ff;
     font-size: 11px;
     font-weight: 700;
-    background: #e0f2fe;
-    color: #0369a1;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 12px;
   }
-
-  /* Dynamic Checkbox Grid */
-  .symptoms-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
+  .login-form .form-field {
+    margin-bottom: 16px;
   }
-
-  .check-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: #ffffff;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .check-card:hover {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-  }
-
-  .check-card input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--primary-accent);
-  }
-
-  /* Modern Timeline */
-  .timeline {
-    position: relative;
-    padding-left: 28px;
-    margin-top: 24px;
-  }
-
-  .timeline::before {
-    content: "";
-    position: absolute;
-    left: 7px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: var(--border-subtle);
-  }
-
-  .timeline-entry {
-    position: relative;
-    margin-bottom: 20px;
-  }
-
-  .timeline-entry::before {
-    content: "";
-    position: absolute;
-    left: -28px;
-    top: 5px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 3px solid var(--primary-accent);
-  }
-
-  .timeline-entry strong {
-    font-size: 13px;
-    font-weight: 700;
+  .login-form label {
     display: block;
-  }
-
-  .timeline-entry span {
     font-size: 12px;
-    color: var(--text-muted);
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+  .login-form input {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 11px 14px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  .login-form input:focus {
+    border-color: #205d91;
+    box-shadow: 0 0 0 3px rgba(32,93,145,0.12);
+  }
+  .login-btn {
+    width: 100%;
+    padding: 13px;
+    background: #173d63;
+    color: white;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .login-btn:hover {
+    background: #1e4d7b;
   }
 
-  /* Metric Blocks */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+  /* Main Application Styles */
+  .app { min-height: 100vh; display: flex; }
+  .sidebar {
+    width: 245px; background: #10243e; color: white; padding: 26px 18px;
+    position: fixed; inset: 0 auto 0 0;
   }
-
-  .stat-card {
-    background: #f8fafc;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 16px;
+  .brand { font-size: 27px; font-weight: 800; letter-spacing: -0.5px; }
+  .brand small { display:block; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; opacity:.65; margin-top:2px; color: #a5c3e6; }
+  .tagline { margin: 30px 8px 20px; font-size: 12px; line-height: 1.5; opacity: .72; }
+  .steps { margin-top: 25px; }
+  .step {
+    display:flex; gap:11px; align-items:center; padding:11px 10px; margin:4px 0;
+    border-radius:10px; color:#b8c5d7; font-size:13px; cursor: pointer;
   }
-
-  .stat-card h4 {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text-main);
+  .step.active { background:#203b5f; color:white; }
+  .step.done { color:#d7e5f7; }
+  .num {
+    width:25px; height:25px; border-radius:50%; display:grid; place-items:center;
+    border:1px solid #54708f; font-size:11px;
   }
-
-  .stat-card p {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
+  .active .num { background:white; color:#10243e; border-color:white; }
+  .main { margin-left:245px; width:calc(100% - 245px); }
+  .topbar {
+    height:72px; background:white; border-bottom:1px solid #e3e8f0;
+    display:flex; align-items:center; justify-content:space-between; padding:0 34px;
   }
-
-  /* Prescribing Cascade Flow Visualizer */
-  .cascade-banner {
-    background: var(--warning-bg);
-    border: 1px solid var(--warning-border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    margin-top: 16px;
+  .topbar strong { font-size:14px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .badge { padding:7px 12px; border-radius:20px; background:#edf5ff; color:#23629c; font-size:11px; font-weight:700; }
+  .content { max-width:1120px; margin:0 auto; padding:38px 34px 60px; }
+  .hero { margin-bottom:26px; }
+  .eyebrow { color:#3975ad; font-weight:800; font-size:12px; letter-spacing:1.4px; text-transform:uppercase; }
+  h1 { font-size:32px; margin:7px 0 8px; letter-spacing:-1px; }
+  .subtitle { color:#667085; max-width:760px; line-height:1.55; font-size:15px; }
+  .card {
+    background:white; border:1px solid #e3e8f0; border-radius:18px; padding:25px;
+    box-shadow:0 5px 22px rgba(16,36,62,.045); margin-bottom:18px;
   }
-
-  .flow-nodes {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin: 16px 0;
+  .card h2 { margin:0 0 6px; font-size:19px; }
+  .card p { color:#667085; font-size:13px; line-height:1.5; }
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
+  .grid.three { grid-template-columns:repeat(3,1fr); }
+  label { display:block; font-size:12px; font-weight:700; color:#475467; margin-bottom:7px; }
+  input, textarea, select {
+    width:100%; border:1px solid #d9e0ea; border-radius:10px; padding:11px 12px;
+    outline:none; background:#fff; color:#172033;
   }
-
-  .flow-item {
-    background: #ffffff;
-    border: 1px solid #fed7aa;
-    border-radius: var(--radius-sm);
-    padding: 8px 14px;
-    font-size: 12px;
-    box-shadow: var(--shadow-sm);
+  input:focus, textarea:focus, select:focus { border-color:#6698c9; box-shadow:0 0 0 3px rgba(67,119,170,.10); }
+  textarea { min-height:100px; resize:vertical; }
+  .actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+  .btn {
+    border:0; border-radius:10px; padding:11px 17px; font-weight:750; font-size:13px;
   }
-
-  .flow-arrow {
-    color: var(--warning-text);
-    font-weight: 800;
+  .primary { background:#173d63; color:white; }
+  .secondary { background:#eef2f6; color:#344054; }
+  .danger { background:#fee2e2; color:#b91c1c; }
+  .med-table { width:100%; border-collapse:collapse; margin-top:15px; font-size:12px; }
+  .med-table th { text-align:left; color:#667085; padding:10px 8px; border-bottom:1px solid #e6eaf0; }
+  .med-table td { padding:12px 8px; border-bottom:1px solid #eef1f5; }
+  .pill { display:inline-block; padding:5px 8px; border-radius:20px; font-size:10px; font-weight:750; background:#f1f5f9; color:#475467; }
+  .symptoms { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:15px; }
+  .symptom {
+    border:1px solid #dfe5ed; padding:12px; border-radius:10px; display:flex; gap:9px; align-items:center;
+    font-size:12px; background:#fff; cursor: pointer;
   }
-
-  .hidden { display: none !important; }
-
-  @media(max-width: 900px) {
-    .sidebar { position: static; width: 100%; height: auto; }
-    .main-wrapper { margin-left: 0; }
-    .app-layout { display: block; }
-    .nav-steps { flex-direction: row; overflow-x: auto; }
-    .form-grid, .form-grid.three-cols, .stats-grid { grid-template-columns: 1fr; }
-    .content-container { padding: 24px 16px; }
+  .symptom input { width:auto; }
+  .loading { text-align:center; padding:55px 20px; }
+  .spinner {
+    width:46px; height:46px; border:4px solid #dfe7ef; border-top-color:#326b9e;
+    border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 18px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .dashboard-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; }
+  .risk {
+    padding:17px; border-radius:13px; background:#f8fafc; border:1px solid #e6ebf1;
+    margin-top:13px;
+  }
+  .risk h3 { margin:0 0 5px; font-size:14px; }
+  .risk p { margin:0; font-size:12px; color:#667085; line-height:1.5; }
+  .flag { color:#9a5a00; background:#fff5df; padding:5px 8px; border-radius:20px; font-size:10px; font-weight:800; }
+  .cascade {
+    border:1px solid #e7d7bc; background:#fffaf1; border-radius:14px; padding:18px; margin-top:15px;
+  }
+  .cascade-flow { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:15px 0; }
+  .node { background:white; border:1px solid #e1d4be; border-radius:10px; padding:10px; font-size:11px; }
+  .arrow { color:#9b7a45; font-weight:800; }
+  .question { padding:10px 0; border-bottom:1px solid #edf0f4; font-size:12px; line-height:1.45; }
+  .notice { padding:12px 14px; border-radius:10px; background:#f0f6fb; color:#3d5871; font-size:11px; line-height:1.5; margin-top:15px; }
+  .timeline { position:relative; margin:20px 0 8px; padding-left:18px; }
+  .timeline:before { content:""; position:absolute; left:4px; top:3px; bottom:3px; width:2px; background:#dbe5ef; }
+  .timeline-empty { color:#94a3b8; font-size:12px; font-style:italic; padding:10px 0; }
+  .timeline-item { position:relative; margin-bottom:16px; padding-left:10px; }
+  .timeline-item .dot { position:absolute; left:-18px; top:4px; width:9px; height:9px; border-radius:50%; background:#4d7da7; }
+  .connection {
+    margin-top:13px; padding:13px; border-radius:11px; background:#fffaf1;
+    border:1px solid #ead9bd; font-size:11px; line-height:1.5; color:#5f5444;
+  }
+  .hidden { display:none !important; }
+  @media(max-width:850px) {
+    .sidebar { position:static; width:100%; height:auto; }
+    .main { margin-left:0; width:100%; }
+    .app { display:block; }
+    .steps { display:flex; overflow:auto; }
+    .step { min-width:145px; }
+    .grid, .grid.three, .dashboard-grid, .symptoms { grid-template-columns:1fr; }
+    .content { padding:25px 18px; }
   }
 </style>
 </head>
 <body>
 
-<div class="app-layout">
-  <aside class="sidebar">
-    <div class="brand-wrapper">
-      <div class="brand-logo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.5 20.5l10-10a4.95 4.95 0 10-7-7l-10 10a4.95 4.95 0 107 7z"/><path d="m8.5 8.5 7 7"/></svg>
+<!-- Login Overlay Screen -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="login-brand-tag">CLINICAL WORKSPACE</span>
+      <h2>RxRecheck</h2>
+      <p>Sign in to access prescription verification & clinical reviews</p>
+    </div>
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div class="form-field">
+        <label for="loginName">Full Name</label>
+        <input type="text" id="loginName" placeholder="Dr. John Doe / Reviewer Name" required autocomplete="name">
       </div>
-      <div class="brand-text">
-        <h1>RE:MED</h1>
-        <span>Clinical Review</span>
+      <div class="form-field">
+        <label for="loginEmail">Email Address</label>
+        <input type="email" id="loginEmail" placeholder="reviewer@rxrecheck.org" required autocomplete="email">
+      </div>
+      <div class="form-field">
+        <label for="loginPass">Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn">Sign In to RxRecheck</button>
+    </form>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Left Side: RxRecheck Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">RxRecheck<small>RETHINK EVERY MEDICATION</small></div>
+    <div class="tagline">Before adding another medication, rethink the medications already there.</div>
+    <div class="steps">
+      <div class="step active" data-step="1"><span class="num">1</span>Patient Baseline</div>
+      <div class="step" data-step="2"><span class="num">2</span>Medication Timeline</div>
+      <div class="step" data-step="3"><span class="num">3</span>Current Signals</div>
+      <div class="step" data-step="4"><span class="num">4</span>RxRecheck Analysis</div>
+      <div class="step" data-step="5"><span class="num">5</span>Clinical Review</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <strong>Medication Review Workspace</strong>
+      <div class="topbar-right">
+        <span class="badge" id="userBadge">Authenticated Session</span>
+        <button class="btn secondary" style="padding:6px 11px;font-size:11px" onclick="handleLogout()">Sign out</button>
       </div>
     </div>
 
-    <nav class="nav-steps">
-      <div class="step-item active" data-step="1"><div class="step-index">1</div>Patient Baseline</div>
-      <div class="step-item" data-step="2"><div class="step-index">2</div>Medication History</div>
-      <div class="step-item" data-step="3"><div class="step-index">3</div>Active Signals</div>
-      <div class="step-item" data-step="4"><div class="step-index">4</div>Analysis Engine</div>
-      <div class="step-item" data-step="5"><div class="step-index">5</div>Clinical Summary</div>
-    </nav>
-  </aside>
+    <div class="content">
+      <section class="hero">
+        <div class="eyebrow">RxRecheck Clinical System</div>
+        <h1 id="pageTitle">Patient Baseline</h1>
+        <div class="subtitle" id="pageSubtitle">Start with the person's health context, not a single prescription.</div>
+      </section>
 
-  <main class="main-wrapper">
-    <header class="top-header">
-      <span class="system-title">Workspace / Pre-Prescription Safety Check</span>
-    </header>
-
-    <div class="content-container">
-      <div class="header-section">
-        <h2 id="pageTitle">Patient Baseline</h2>
-        <p id="pageSubtitle">Start with the person's health context, not a single prescription.</p>
-      </div>
-
-      <!-- Step 1: Baseline Context -->
+      <!-- Step 1: Patient Baseline Context -->
       <section id="screen1" class="screen">
-        <div class="modern-card">
-          <div class="card-head">
-            <h3>Clinical Demographics</h3>
+        <div class="card">
+          <h2>Patient baseline context</h2>
+          <p>Enter patient clinical information manually to interpret the medication regimen in context.</p>
+          <div class="grid">
+            <div><label>Patient ID / initials</label><input id="pid" placeholder="Enter Patient ID / initials"></div>
+            <div><label>Age (years)</label><input id="age" type="number" placeholder="Enter age in years"></div>
+            <div><label>Biological sex</label><select id="sex"><option value="">Select...</option><option>Female</option><option>Male</option><option>Other / not specified</option></select></div>
+            <div><label>Kidney function</label><input id="kidney" placeholder="Enter status (e.g. eGFR / serum creatinine)"></div>
+            <div><label>Liver function</label><input id="liver" placeholder="Enter status (e.g. LFTs / enzymes)"></div>
+            <div><label>History of falls</label><select id="falls"><option>None reported</option><option>One or more falls</option><option>Near falls / unsteady gait</option></select></div>
           </div>
-          <div class="form-grid">
-            <div class="input-group"><label>Patient Reference / ID</label><input id="pid" autocomplete="off"></div>
-            <div class="input-group"><label>Age</label><input id="age" type="number" min="0" max="130"></div>
-            <div class="input-group">
-              <label>Biological Sex</label>
-              <select id="sex">
-                <option value="">Select an option</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
-                <option value="Other">Other / Not Specified</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label>Fall Incidents (Past 12m)</label>
-              <select id="falls">
-                <option value="">Select risk status</option>
-                <option value="None">None documented</option>
-                <option value="One or more falls">One or more falls</option>
-                <option value="Unsteady gait">Unsteady gait / Near-falls</option>
-              </select>
-            </div>
-            <div class="input-group"><label>Renal Profile (eGFR / Status)</label><input id="kidney"></div>
-            <div class="input-group"><label>Hepatic Function Status</label><input id="liver"></div>
-            <div class="input-group full-width">
-              <label>Documented Medical Conditions</label>
-              <textarea id="conditions"></textarea>
-            </div>
-          </div>
-          <div class="actions-row">
-            <button class="btn btn-primary" onclick="next(2)">Continue to Medications →</button>
-          </div>
+          <div style="margin-top:15px"><label>Existing medical conditions</label><textarea id="conditions" placeholder="Enter confirmed medical conditions and diagnoses..."></textarea></div>
+          <div class="actions"><button class="btn primary" onclick="next(2)">Continue →</button></div>
         </div>
       </section>
 
       <!-- Step 2: Medication Timeline -->
       <section id="screen2" class="screen hidden">
-        <div class="modern-card">
-          <div class="card-head">
-            <h3>Medication Records</h3>
-            <button class="btn btn-secondary" onclick="toggleMedForm()">+ Add New Regimen</button>
+        <div class="card">
+          <h2>Medication timeline</h2>
+          <p>Document medications chronologically to observe therapy accumulation and intersecting decisions.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="btn primary" onclick="toggleMedForm()">＋ Add medication</button>
+            <button class="btn secondary" onclick="saveReview()">Save review</button>
           </div>
-
-          <div id="medForm" class="modern-card hidden" style="background:#f8fafc; border-color:#cbd5e1;">
-            <h4 id="medFormTitle" style="font-size:15px; margin-bottom:16px; font-weight:700;">Add Medication</h4>
-            <div class="form-grid three-cols">
-              <div class="input-group"><label>Generic / Brand Name</label><input id="mName"></div>
-              <div class="input-group"><label>Clinical Indication</label><input id="mPurpose"></div>
-              <div class="input-group"><label>Start Period</label><input id="mStarted" type="month"></div>
-              <div class="input-group"><label>Prescribing Setting</label><input id="mSource"></div>
-              <div class="input-group">
-                <label>Status</label>
-                <select id="mStatus">
-                  <option>Active</option>
-                  <option>Stopped</option>
-                  <option>Suspended</option>
-                </select>
-              </div>
+          <div id="medForm" class="risk hidden" style="margin-bottom:16px">
+            <h3 id="medFormTitle">Add medication</h3>
+            <div class="grid three" style="margin-top:12px">
+              <div><label>Medication name & strength</label><input id="mName" placeholder="Enter medication and dose"></div>
+              <div><label>Indication / Purpose</label><input id="mPurpose" placeholder="Enter purpose / indication"></div>
+              <div><label>Date started</label><input id="mStarted" type="month"></div>
+              <div><label>Prescribing source</label><input id="mSource" placeholder="Prescribing unit or department"></div>
+              <div><label>Status</label><select id="mStatus"><option>Active</option><option>Stopped</option><option>On hold</option></select></div>
             </div>
-            <div class="actions-row">
-              <button class="btn btn-secondary" onclick="toggleMedForm()">Cancel</button>
-              <button class="btn btn-primary" onclick="submitMedication()">Save Record</button>
-            </div>
+            <div class="actions" style="margin-top:12px"><button class="btn secondary" onclick="toggleMedForm()">Cancel</button><button class="btn primary" onclick="submitMedication()">Save medication</button></div>
           </div>
-
-          <div class="table-responsive">
-            <table class="modern-table">
-              <thead>
-                <tr>
-                  <th>Medication</th>
-                  <th>Indication</th>
-                  <th>Initiated</th>
-                  <th>Origin</th>
-                  <th>Status</th>
-                  <th style="text-align:right;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="medBody"></tbody>
-            </table>
-          </div>
-
-          <h4 style="font-size:14px; font-weight:700; margin-top:32px;">Accumulation Chronology</h4>
-          <div class="timeline" id="timeline"></div>
-
-          <div class="actions-row">
-            <button class="btn btn-secondary" onclick="next(1)">← Back</button>
-            <button class="btn btn-primary" onclick="next(3)">Continue to Signals →</button>
-          </div>
+          <table class="med-table">
+            <thead><tr><th>Medication</th><th>Purpose</th><th>Started</th><th>Prescribing source</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="medBody"></tbody>
+          </table>
+          <div class="timeline" id="timeline"><div class="timeline-empty">No medications added yet. Click "＋ Add medication" above.</div></div>
+          <div class="actions"><button class="btn secondary" onclick="next(1)">← Back</button><button class="btn primary" onclick="next(3)">Continue →</button></div>
         </div>
       </section>
 
-      <!-- Step 3: Current Signals -->
+      <!-- Step 3: Current Signals (BP in mm of Hg & Pulse in bpm) -->
       <section id="screen3" class="screen hidden">
-        <div class="modern-card">
-          <div class="card-head">
-            <h3>Active Clinical Symptoms & Observed Signals</h3>
+        <div class="card">
+          <h2>What is happening now?</h2>
+          <p>Capture current symptoms, vitals, and observations to cross-reference with the active medication list.</p>
+          <div class="symptoms">
+            <label class="symptom"><input type="checkbox" value="Dizziness"> Dizziness</label>
+            <label class="symptom"><input type="checkbox" value="Daytime sleepiness"> Daytime sleepiness</label>
+            <label class="symptom"><input type="checkbox" value="Swollen ankles"> Swollen ankles</label>
+            <label class="symptom"><input type="checkbox" value="Confusion"> Confusion</label>
+            <label class="symptom"><input type="checkbox" value="Constipation"> Constipation</label>
+            <label class="symptom"><input type="checkbox" value="Dry mouth / blurred vision"> Dry mouth / blurred vision</label>
+            <label class="symptom"><input type="checkbox" value="Unsteady gait"> Unsteady gait</label>
+            <label class="symptom"><input type="checkbox" value="Near falls"> Near falls</label>
+            <label class="symptom"><input type="checkbox" value="Other concern"> Other concern</label>
           </div>
-          <div class="symptoms-selector">
-            <label class="check-card"><input type="checkbox" value="Dizziness"> Dizziness</label>
-            <label class="check-card"><input type="checkbox" value="Daytime sleepiness"> Daytime Sleepiness</label>
-            <label class="check-card"><input type="checkbox" value="Swollen ankles"> Swollen Ankles / Edema</label>
-            <label class="check-card"><input type="checkbox" value="Confusion"> Cognitive Shifts / Confusion</label>
-            <label class="check-card"><input type="checkbox" value="Constipation"> Constipation</label>
-            <label class="check-card"><input type="checkbox" value="Dry mouth / blurred vision"> Dry Mouth / Blurred Vision</label>
-            <label class="check-card"><input type="checkbox" value="Unsteady gait"> Gait Instability</label>
-            <label class="check-card"><input type="checkbox" value="Near falls"> Documented Near-Falls</label>
-          </div>
-
-          <div class="form-grid" style="margin-top:24px;">
-            <div class="input-group full-width">
-              <label>Caregiver / Patient Context Observations</label>
-              <textarea id="observations"></textarea>
+          <div style="margin-top:18px"><label>Caregiver / clinical observations</label><textarea id="observations" placeholder="Describe symptoms, patient complaints, or changes noticed..."></textarea></div>
+          <div class="grid three" style="margin-top:15px">
+            <div>
+              <label>Blood pressure (mm of Hg)</label>
+              <input id="bp" placeholder="e.g. 120/80 mm of Hg">
             </div>
-            <div class="input-group"><label>Recent BP</label><input id="bp"></div>
-            <div class="input-group"><label>Resting HR</label><input id="hr"></div>
+            <div>
+              <label>Pulse / Heart rate (bpm)</label>
+              <input id="hr" placeholder="e.g. 72 bpm">
+            </div>
+            <div>
+              <label>Other vital / signal</label>
+              <input id="vital" placeholder="e.g. SpO2, blood glucose">
+            </div>
           </div>
-
-          <div class="actions-row">
-            <button class="btn btn-secondary" onclick="next(2)">← Back</button>
-            <button class="btn btn-primary" onclick="analyze()">Run Analytical Check →</button>
-          </div>
+          <div class="actions"><button class="btn secondary" onclick="next(2)">← Back</button><button class="btn primary" onclick="analyze()">Analyze with RxRecheck →</button></div>
         </div>
       </section>
 
-      <!-- Step 4: Analysis Engine -->
+      <!-- Step 4: RxRecheck Analysis -->
       <section id="screen4" class="screen hidden">
-        <div id="loading" class="modern-card" style="text-align:center; padding:60px 0;">
-          <div style="font-weight:700; font-size:16px;">Analyzing medication records and chronology…</div>
+        <div class="card loading" id="loading">
+          <div class="spinner"></div>
+          <h2>RxRecheck is reviewing the medication picture…</h2>
+          <p>Synthesizing medication timeline, health context, and reported signals for clinical safety review.</p>
         </div>
-
         <div id="analysisResult" class="hidden">
-          <div class="modern-card">
-            <div class="card-head" style="margin-bottom:12px;">
+          <div class="card" style="padding-bottom:18px">
+            <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
               <div>
-                <h3 id="patientSummaryTitle" style="font-size:22px;"></h3>
-                <p id="patientSummaryDesc" style="color:var(--text-muted); font-size:13px;"></p>
+                <div class="eyebrow">RxRecheck clinical review</div>
+                <h2 id="patientReviewHeader" style="font-size:24px;margin-top:7px">Patient Evaluation</h2>
+                <p id="patientReviewSub" style="margin-bottom:0">Review generated from medication timeline and reported signals.</p>
+              </div>
+              <span class="flag" style="font-size:11px">REVIEW RECOMMENDED</span>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div>
+              <div class="card">
+                <h2>⚠ Prescription cascade check</h2>
+                <p>RxRecheck analyzes timeline patterns to detect potential prescribing cascades or adverse effects.</p>
+                <div class="cascade" id="cascadeBox" style="margin-top:18px">
+                  <div class="cascade-flow" id="cascadeFlow"></div>
+                  <p id="cascadeText" style="font-size:12px;color:#6b6255;margin:0;line-height:1.55"></p>
+                </div>
+              </div>
+
+              <div class="card">
+                <h2>Medication burden</h2>
+                <div class="grid three" style="margin-top:16px">
+                  <div class="risk" style="margin:0"><h3 id="statActiveMeds">0</h3><p>Active medicines</p></div>
+                  <div class="risk" style="margin:0"><h3 id="statIndications">0</h3><p>Current indications</p></div>
+                  <div class="risk" style="margin:0"><h3 id="statSignals">0</h3><p>Reported signals</p></div>
+                </div>
+                <div class="risk"><h3>Why this matters</h3><p>As treatment accumulates over time, each medication should continue to have a clear current purpose, acceptable benefit-risk balance, and fit with the patient's changing health context.</p></div>
+              </div>
+
+              <div class="card">
+                <h2>Reported signals</h2>
+                <p id="symptomResult">Documented signals will appear here alongside vitals.</p>
               </div>
             </div>
 
-            <div class="stats-grid" style="margin-top:20px;">
-              <div class="stat-card"><h4 id="burdenActiveCount">0</h4><p>Active Agents</p></div>
-              <div class="stat-card"><h4 id="burdenIndicationCount">0</h4><p>Verified Indications</p></div>
-              <div class="stat-card"><h4 id="burdenPatternCount">0</h4><p>Cascade Flags</p></div>
-            </div>
+            <div>
+              <div class="card">
+                <h2>Why RxRecheck flagged this</h2>
+                <p>RxRecheck provides explainable clinical patterns rather than automated opaque decisions.</p>
+                <button class="btn secondary" style="margin:10px 0 14px" onclick="showReasoning()">Show reasoning step-by-step →</button>
+                <div id="reasoningPanel" class="hidden">
+                  <div class="risk"><h3>1 · Timeline evidence</h3><p id="reasonTimeline">Timeline sequence analysis.</p></div>
+                  <div class="risk"><h3>2 · Symptom evidence</h3><p id="reasonSymptom">Symptom evidence analysis.</p></div>
+                  <div class="risk"><h3>3 · Sequence detected</h3><p id="reasonSequence">Medication addition sequence.</p></div>
+                  <div class="risk"><h3>4 · Potential relationship</h3><p id="reasonRelationship">RxRecheck identifies patterns for qualified healthcare discussion. Timing and association serve as signals for review, not definitive proof of causation.</p></div>
+                  <div class="risk"><h3>5 · Alternative explanations</h3><p>Other medical conditions, fluid balance, and unrelated causes can also contribute to symptoms. RxRecheck does not rule these out.</p></div>
+                  <div class="risk"><h3>6 · Patient context</h3><p>Age, renal/hepatic status, and fall history must be integrated when evaluating the full regimen.</p></div>
+                  <div class="connection"><strong>RxRecheck signal</strong><br><span>Potential medication-related pattern → professional clinician review</span></div>
+                  <div class="risk"><h3>7 · Question for the clinician</h3><p id="reasonQuestion">What medication-related contribution, if any, should be considered?</p></div>
+                </div>
+              </div>
 
-            <div id="cascadeContainer" class="cascade-banner hidden">
-              <strong style="color:var(--warning-text); font-size:14px;">Potential Prescribing Cascade Detected</strong>
-              <div class="flow-nodes"></div>
-              <p id="cascadeText" style="font-size:13px; color:#78350f;"></p>
-            </div>
+              <div class="card">
+                <h2>Questions for the clinician</h2>
+                <div class="question">Could the patient's current symptoms have a medication-related etiology?</div>
+                <div class="question">What is the active confirmed indication for each medication?</div>
+                <div class="question">Could any newer medication be treating an adverse effect of an earlier drug?</div>
+                <div class="question">Is the complete therapeutic regimen still appropriate given current renal, hepatic, and age parameters?</div>
+              </div>
 
-            <div style="margin-top:24px;">
-              <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">Documented Signals Under Review</h4>
-              <p id="symptomResult" style="font-size:13px; color:var(--text-muted);"></p>
-            </div>
-
-            <div class="actions-row">
-              <button class="btn btn-secondary" onclick="next(3)">← Back</button>
-              <button class="btn btn-primary" onclick="next(5)">Proceed to Summary →</button>
+              <div class="notice"><strong>🔒 Clinical safeguard:</strong> RxRecheck identifies patterns for professional review. It does not independently instruct anyone to stop, start, switch, or taper medication. Final decisions remain with qualified healthcare professionals.</div>
             </div>
           </div>
+          <div class="actions"><button class="btn secondary" onclick="next(3)">← Back</button><button class="btn primary" onclick="next(5)">View Clinical Review →</button></div>
         </div>
       </section>
 
-      <!-- Step 5: Summary Output -->
+      <!-- Step 5: Clinical Review Summary -->
       <section id="screen5" class="screen hidden">
-        <div class="modern-card">
-          <div class="card-head">
-            <h3>Clinical Review Assessment</h3>
-          </div>
-          <div class="form-grid">
-            <div class="input-group full-width">
-              <div class="stat-card" style="background:#ffffff; border:1px solid #e2e8f0; padding:20px;">
-                <h4 style="font-size:15px; margin-bottom:8px;">Core Action Directives</h4>
-                <ul style="padding-left:18px; font-size:13px; color:var(--text-muted); display:flex; flex-direction:column; gap:6px;">
-                  <li>Verify current indication and benefit-risk balance for each long-term agent.</li>
-                  <li>Cross-evaluate documented symptoms with potential adverse drug reactions.</li>
-                  <li>Inquire whether newer treatments target untracked side effects of earlier regimens.</li>
-                </ul>
+        <div class="card">
+          <div class="eyebrow">RxRecheck output</div>
+          <h2 style="font-size:25px;margin-top:6px">Clinical Review Summary</h2>
+          <p>This summary is structured to help healthcare professionals reassess polypharmacy before prescribing additional therapy.</p>
+          <div class="dashboard-grid">
+            <div>
+              <div class="risk"><h3>Priority concerns</h3><p>1. Review the complete medication list and verify active indications.<br>2. Evaluate whether reported symptoms may be drug-induced.<br>3. Screen for therapeutic duplication and potential prescribing cascades.<br>4. Re-titrate or adjust regimen according to current organ function and age.</p></div>
+              <div class="risk"><h3>Medications to reassess</h3><p><strong>All active medications:</strong> confirm indication, therapeutic benefit, duration, and patient compliance. RxRecheck highlights areas for clinical evaluation without replacing clinical judgment.</p></div>
+              <div class="cascade">
+                <strong>Prescribing cascade principle</strong>
+                <div class="cascade-flow">
+                  <div class="node">Primary Drug</div><div class="arrow">→</div><div class="node">Adverse Effect</div><div class="arrow">→</div><div class="node">Secondary Drug Added</div>
+                </div>
+                <p style="font-size:11px;color:#6b6255;margin:0">Verify whether newly introduced medications treat genuine new pathology or an unrecognized adverse reaction to an existing drug.</p>
               </div>
             </div>
-            <div class="input-group full-width">
-              <p id="caregiverText" style="font-size:13px; color:var(--text-muted);"></p>
+            <div>
+              <div class="risk">
+                <h3>Observations & Context</h3>
+                <p id="caregiverText">No observations documented yet. Enter notes on Step 3 for review discussion.</p>
+              </div>
+              <div class="risk">
+                <h3>Key clinical queries</h3>
+                <div class="question">Are any reported symptoms recognized side effects of current medications?</div>
+                <div class="question">Are all current prescriptions still medically necessary?</div>
+                <div class="question">Could any medications be serving duplicate or overlapping functions?</div>
+                <div class="question">Could one medication be contributing to a symptom currently treated by another?</div>
+              </div>
             </div>
           </div>
-          <div class="actions-row">
-            <button class="btn btn-secondary" onclick="next(4)">← Adjust Analysis</button>
-            <button class="btn btn-primary" onclick="restart()">Clear Session / Start New</button>
-          </div>
+          <div class="notice"><strong>RxRecheck principle:</strong> Before adding another medication, rethink the medications already there. This tool assists clinical review and does not replace licensed medical judgment.</div>
+          <div class="actions"><button class="btn secondary" onclick="next(4)">← Back to Analysis</button><button class="btn primary" onclick="restart()">Start New Review</button></div>
         </div>
       </section>
     </div>
@@ -733,195 +467,279 @@
 </div>
 
 <script>
-const stepMeta = {
-  1: ["Patient Baseline", "Start with the person's health context, not a single prescription."],
-  2: ["Medication Records", "Analyze accumulation, therapy duration, and intersecting prescriptions."],
-  3: ["Active Signals", "Catalog observed adverse effects, functional changes, and symptoms."],
-  4: ["Analytical Engine", "Algorithmic review of sequence timing and potential drug interactions."],
-  5: ["Clinical Summary", "Concise synthesis intended to guide prescribing discussions."]
+const titles = {
+  1:["Patient Baseline","Start with the person's health context, not a single prescription."],
+  2:["Medication Timeline","See how medications accumulated over time and where decisions may intersect."],
+  3:["Current Signals","Capture symptoms and observations that may help interpret the medication picture."],
+  4:["RxRecheck Analysis","Review explainable medication patterns for professional clinical discussion."],
+  5:["Clinical Review","Turn the analysis into focused questions for a qualified healthcare professional."]
 };
 
-let meds = [];
-let editingIndex = -1;
+let meds=[]; 
+let editingIndex=-1;
 
-function $(id) { return document.getElementById(id); }
+function $(id){return document.getElementById(id)}
 
-function setStep(idx) {
-  document.querySelectorAll('.screen').forEach((el, i) => el.classList.toggle('hidden', i !== idx - 1));
-  document.querySelectorAll('.step-item').forEach(el => el.classList.toggle('active', +el.dataset.step === idx));
-  $('pageTitle').textContent = stepMeta[idx][0];
-  $('pageSubtitle').textContent = stepMeta[idx][1];
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function next(idx) { setStep(idx); }
-
-function renderMeds() {
-  const body = $('medBody');
-  body.innerHTML = '';
-  meds.sort((a, b) => (a.started || '').localeCompare(b.started || ''));
-
-  if (!meds.length) {
-    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No medications on record.</td></tr>';
-  } else {
-    meds.forEach((m, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${esc(m.name)}</strong></td>
-        <td>${esc(m.purpose || '—')}</td>
-        <td>${formatMonth(m.started)}</td>
-        <td>${esc(m.source || '—')}</td>
-        <td><span class="badge-pill">${esc(m.status)}</span></td>
-        <td style="text-align:right;">
-          <button class="btn btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="editMedication(${i})">Edit</button>
-          <button class="btn btn-secondary" style="padding:4px 8px;font-size:12px;color:var(--danger);" onclick="deleteMedication(${i})">Delete</button>
-        </td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  const timeline = $('timeline');
-  if (!meds.length) {
-    timeline.innerHTML = '<p style="color:var(--text-muted);font-size:12px;">No historical entries registered.</p>';
-  } else {
-    timeline.innerHTML = meds.map(m => `
-      <div class="timeline-entry">
-        <strong>${formatMonth(m.started)} · ${esc(m.name)}</strong>
-        <span>${esc(m.purpose || 'Unspecified Indication')} · ${esc(m.source || 'Origin Not Specified')} (${esc(m.status)})</span>
-      </div>
-    `).join('');
-  }
-}
-
-function formatMonth(v) {
-  if (!v) return '—';
-  const [y, m] = v.split('-');
-  return new Date(+y, +m - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-}
-
-function esc(v) {
-  return String(v ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
-
-function toggleMedForm() {
-  $('medForm').classList.toggle('hidden');
-  if ($('medForm').classList.contains('hidden')) resetMedForm();
-}
-
-function resetMedForm() {
-  editingIndex = -1;
-  $('medFormTitle').textContent = 'Add Medication';
-  ['mName', 'mPurpose', 'mStarted', 'mSource'].forEach(id => $(id).value = '');
-  $('mStatus').value = 'Active';
-}
-
-function submitMedication() {
-  const m = {
-    name: $('mName').value.trim(),
-    purpose: $('mPurpose').value.trim(),
-    started: $('mStarted').value,
-    source: $('mSource').value.trim(),
-    status: $('mStatus').value
-  };
-  if (!m.name) {
-    alert('Medication name is required.');
+// Authentication Handling
+function handleLogin(e){
+  e.preventDefault();
+  const name=$('loginName').value.trim();
+  const email=$('loginEmail').value.trim();
+  const pass=$('loginPass').value;
+  if(!name || !email || !pass){
+    alert('Please fill out Name, Email, and Password.');
     return;
   }
-  if (editingIndex >= 0) meds[editingIndex] = m;
-  else meds.push(m);
-  renderMeds();
-  $('medForm').classList.add('hidden');
-  resetMedForm();
+  const user={name, email};
+  sessionStorage.setItem('rxUser', JSON.stringify(user));
+  applyUserSession(user);
 }
 
-function editMedication(i) {
-  const m = meds[i];
-  editingIndex = i;
-  $('medFormTitle').textContent = 'Edit Medication';
-  $('mName').value = m.name;
-  $('mPurpose').value = m.purpose;
-  $('mStarted').value = m.started;
-  $('mSource').value = m.source;
-  $('mStatus').value = m.status;
+function checkUserSession(){
+  try {
+    const raw=sessionStorage.getItem('rxUser');
+    if(raw){
+      const u=JSON.parse(raw);
+      applyUserSession(u);
+    } else {
+      $('loginScreen').classList.remove('hidden');
+    }
+  } catch(e){
+    $('loginScreen').classList.remove('hidden');
+  }
+}
+
+function applyUserSession(u){
+  $('userBadge').textContent=u.name ? `Clinician: ${u.name}` : 'Signed In';
+  $('loginScreen').classList.add('hidden');
+}
+
+function handleLogout(){
+  if(confirm('Are you sure you want to sign out?')){
+    sessionStorage.removeItem('rxUser');
+    $('loginName').value='';
+    $('loginEmail').value='';
+    $('loginPass').value='';
+    $('loginScreen').classList.remove('hidden');
+  }
+}
+
+function setStep(n){
+ document.querySelectorAll('.screen').forEach((el,i)=>el.classList.toggle('hidden',i!==n-1));
+ document.querySelectorAll('.step').forEach(el=>el.classList.toggle('active',+el.dataset.step===n));
+ $('pageTitle').textContent=titles[n][0]; $('pageSubtitle').textContent=titles[n][1];
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function next(n){ setStep(n); }
+
+function renderMeds(){
+ const body=$('medBody'); body.innerHTML='';
+ meds.sort((a,b)=>(a.started||'').localeCompare(b.started||''));
+ if(meds.length===0){
+   body.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:16px;">No medications entered. Click "＋ Add medication" to enter medications.</td></tr>';
+   $('timeline').innerHTML='<div class="timeline-empty">No medications added yet. Click "＋ Add medication" above.</div>';
+   return;
+ }
+ meds.forEach((m,i)=>{
+   const tr=document.createElement('tr');
+   tr.innerHTML=`<td><strong>${esc(m.name)}</strong></td><td>${esc(m.purpose||'—')}</td><td>${formatMonth(m.started)}</td><td>${esc(m.source||'—')}</td><td><span class="pill">${esc(m.status)}</span></td><td><button class="btn secondary" style="padding:6px 9px;font-size:11px" onclick="editMedication(${i})">Edit</button> <button class="btn secondary danger" style="padding:6px 9px;font-size:11px" onclick="deleteMedication(${i})">Delete</button></td>`;
+   body.appendChild(tr);
+ });
+ const timeline=$('timeline');
+ timeline.innerHTML=meds.map(m=>`<div class="timeline-item"><div class="dot"></div><div><strong>${formatMonth(m.started)} · ${esc(m.name)}</strong><div>${esc(m.purpose||'No purpose specified')} · ${esc(m.source||'Source not specified')}</div></div></div>`).join('');
+}
+
+function formatMonth(v){
+  if(!v)return 'Date not set';
+  const [y,m]=v.split('-');
+  return new Date(+y,+m-1,1).toLocaleDateString(undefined,{month:'short',year:'numeric'});
+}
+
+function esc(v){
+  return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function toggleMedForm(){
+  $('medForm').classList.toggle('hidden');
+  if($('medForm').classList.contains('hidden')) resetMedForm();
+}
+
+function resetMedForm(){
+  editingIndex=-1;
+  $('medFormTitle').textContent='Add medication';
+  ['mName','mPurpose','mStarted','mSource'].forEach(id=>$(id).value='');
+  $('mStatus').value='Active';
+}
+
+function submitMedication(){
+ const m={
+   name:$('mName').value.trim(),
+   purpose:$('mPurpose').value.trim(),
+   started:$('mStarted').value,
+   source:$('mSource').value.trim(),
+   status:$('mStatus').value
+ };
+ if(!m.name){
+   alert('Please enter a medication name.');
+   return;
+ }
+ if(editingIndex>=0) meds[editingIndex]=m; else meds.push(m);
+ renderMeds();
+ $('medForm').classList.add('hidden');
+ resetMedForm();
+}
+
+function editMedication(i){
+  const m=meds[i];
+  editingIndex=i;
+  $('medFormTitle').textContent='Edit medication';
+  $('mName').value=m.name;
+  $('mPurpose').value=m.purpose;
+  $('mStarted').value=m.started;
+  $('mSource').value=m.source;
+  $('mStatus').value=m.status;
   $('medForm').classList.remove('hidden');
 }
 
-function deleteMedication(i) {
-  if (confirm('Delete this medication record?')) {
-    meds.splice(i, 1);
+function deleteMedication(i){
+  if(confirm('Remove this medication from the review?')){
+    meds.splice(i,1);
     renderMeds();
   }
 }
 
-function getSymptoms() {
-  return [...document.querySelectorAll('#screen3 input[type=checkbox]:checked')].map(x => x.value);
+function getSymptoms(){
+  return [...document.querySelectorAll('#screen3 input[type=checkbox]:checked')].map(x=>x.value);
 }
 
-function analyze() {
-  setStep(4);
-  $('loading').classList.remove('hidden');
-  $('analysisResult').classList.add('hidden');
-  setTimeout(() => {
-    buildAnalysis();
-    $('loading').classList.add('hidden');
-    $('analysisResult').classList.remove('hidden');
-  }, 450);
+function analyze(){
+ setStep(4);
+ $('loading').classList.remove('hidden');
+ $('analysisResult').classList.add('hidden');
+ setTimeout(()=>{
+   buildAnalysis();
+   $('loading').classList.add('hidden');
+   $('analysisResult').classList.remove('hidden');
+ }, 500);
 }
 
-function buildAnalysis() {
-  const symptoms = getSymptoms();
-  const active = meds.filter(m => m.status === 'Active');
-  const swelling = symptoms.includes('Swollen ankles');
-  
-  const aml = active.find(m => /amlodipine/i.test(m.name));
-  const furo = active.find(m => /furosemide/i.test(m.name));
-  const isCascade = Boolean(swelling && aml && furo && (!aml.started || !furo.started || aml.started <= furo.started));
+function buildAnalysis(){
+ const symptoms=getSymptoms(), active=meds.filter(m=>m.status==='Active');
+ const pId=$('pid').value.trim() || 'Unspecified';
+ const pAge=$('age').value.trim() ? `${$('age').value.trim()} years` : 'Age not recorded';
+ const bpVal=$('bp').value.trim();
+ const hrVal=$('hr').value.trim();
+ const vitalVal=$('vital').value.trim();
 
-  const pid = $('pid').value.trim();
-  const age = $('age').value.trim();
-  $('patientSummaryTitle').textContent = `Patient: ${pid || 'Unregistered'} ${age ? '· ' + age + ' yrs' : ''}`;
-  $('patientSummaryDesc').textContent = `${active.length} active agent(s) tracked.`;
+ $('patientReviewHeader').textContent=`Patient ${pId} · ${pAge}`;
+ $('patientReviewSub').textContent=`${active.length} active medication${active.length===1?'':'s'} · Review generated from manual clinical entry`;
 
-  $('burdenActiveCount').textContent = active.length;
-  $('burdenIndicationCount').textContent = active.filter(m => m.purpose.trim()).length;
-  $('burdenPatternCount').textContent = isCascade ? '1' : '0';
+ // Update burden stats
+ $('statActiveMeds').textContent=active.length;
+ $('statIndications').textContent=active.filter(m=>m.purpose).length;
+ $('statSignals').textContent=symptoms.length + (bpVal||hrVal?1:0);
 
-  $('symptomResult').textContent = symptoms.length
-    ? `Identified current signals: ${symptoms.join(', ')}.`
-    : 'No explicit physical symptoms were indicated.';
+ // Signals display
+ let signalsText=[];
+ if(symptoms.length) signalsText.push(`Reported symptoms: ${symptoms.join(', ')}`);
+ if(bpVal) signalsText.push(`Blood Pressure: ${bpVal}`);
+ if(hrVal) signalsText.push(`Pulse / Heart Rate: ${hrVal}`);
+ if(vitalVal) signalsText.push(`Additional vitals: ${vitalVal}`);
+ $('symptomResult').textContent=signalsText.length ? signalsText.join(' | ') : 'No symptoms or vital signs were recorded during baseline review.';
 
-  const cascadeContainer = $('cascadeContainer');
-  if (isCascade) {
-    cascadeContainer.classList.remove('hidden');
-    cascadeContainer.querySelector('.flow-nodes').innerHTML = `
-      <div class="flow-item"><strong>${esc(aml.name)}</strong></div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-item"><strong>Reported Ankle Swelling</strong></div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-item"><strong>${esc(furo.name)}</strong></div>
-    `;
-    $('cascadeText').textContent = `Documented sequence indicates initiation of ${furo.name} following ${aml.name} with coinciding edema symptoms. This warrant assessment for an unaddressed side-effect cascade.`;
-  } else {
-    cascadeContainer.classList.add('hidden');
-  }
+ // Prescribing cascade & interaction check
+ const swelling=symptoms.includes('Swollen ankles');
+ const aml=active.find(m=>/amlodipine|nifedipine|felodipine|calcium channel/i.test(m.name));
+ const furo=active.find(m=>/furosemide|torsemide|bumetanide|loop diuretic/i.test(m.name));
+ const cascadeBox=$('cascadeBox');
 
-  $('caregiverText').textContent = $('observations').value.trim()
-    ? `Patient Context Observation: "${$('observations').value.trim()}"`
-    : 'No unstructured qualitative observations submitted.';
+ if(aml && furo && swelling){
+   cascadeBox.classList.remove('hidden');
+   $('cascadeFlow').innerHTML=`<div class="node"><strong>${esc(aml.name)}</strong><br><small>prescribed early</small></div><div class="arrow">→</div><div class="node"><strong>Ankle swelling</strong><br><small>reported symptom</small></div><div class="arrow">→</div><div class="node"><strong>${esc(furo.name)}</strong><br><small>added later</small></div>`;
+   $('cascadeText').textContent=`Ankle swelling is reported with ${esc(aml.name)} and ${esc(furo.name)} present. Consider evaluating whether diuretic therapy was initiated in response to calcium-channel-blocker-induced edema rather than primary volume overload.`;
+   $('reasonTimeline').textContent=`${aml.name} appears in conjunction with subsequent ${furo.name} in the active timeline.`;
+   $('reasonSequence').textContent=`${furo.name} appears concurrently with vasodilator/calcium channel therapy.`;
+   $('reasonQuestion').textContent='Could peripheral edema be an adverse drug event from CCB therapy rather than heart failure or renal pathology?';
+ } else if(active.length>0 && symptoms.length>0){
+   $('cascadeFlow').innerHTML=`<div class="node"><strong>Active Medications (${active.length})</strong><br><small>current list</small></div><div class="arrow">→</div><div class="node"><strong>${symptoms[0]}</strong><br><small>reported signal</small></div>`;
+   $('cascadeText').textContent='Review active medications to ensure no newly reported symptoms or physiological changes are secondary to drug interactions or cumulative toxicity.';
+   $('reasonTimeline').textContent=`${active.length} active medications documented in timeline.`;
+   $('reasonSequence').textContent='Evaluation of sequence requires clinician correlation with original prescription dates.';
+   $('reasonQuestion').textContent='Could any of the reported symptoms be secondary to the current medication list?';
+ } else {
+   $('cascadeFlow').innerHTML='<p style="color:#64748b;font-size:12px;margin:0">No specific prescribing cascade patterns triggered from current data.</p>';
+   $('cascadeText').textContent='Ensure each active medication continues to have a valid clinical indication and regular monitoring.';
+   $('reasonTimeline').textContent='Medication timeline recorded without automated conflict flags.';
+   $('reasonSequence').textContent='No anomalous prescribing sequences detected.';
+   $('reasonQuestion').textContent='Are all active medications achieving targeted therapeutic goals?';
+ }
+
+ $('reasonSymptom').textContent=symptoms.length ? `Selected symptoms: ${symptoms.join(', ')}.` : 'No structured symptoms selected.';
+ $('caregiverText').textContent=$('observations').value.trim() ? `Clinical observation: ${$('observations').value.trim()}` : 'No specific caregiver or clinical observations entered.';
 }
 
-function restart() {
-  location.reload();
+function showReasoning(){
+  $('reasoningPanel').classList.toggle('hidden');
 }
 
-document.querySelectorAll('.step-item').forEach(el => {
-  el.addEventListener('click', () => setStep(+el.dataset.step));
-});
+function saveReview(){
+ const data=collectReview();
+ localStorage.setItem('rxReviewData', JSON.stringify(data));
+ alert('Review data saved locally in your browser.');
+}
 
+function collectReview(){
+ return {
+   patient:{
+     id:$('pid').value, age:$('age').value, sex:$('sex').value,
+     kidney:$('kidney').value, liver:$('liver').value, falls:$('falls').value,
+     conditions:$('conditions').value
+   },
+   medications:meds,
+   signals:getSymptoms(),
+   observations:$('observations').value,
+   bp:$('bp').value,
+   hr:$('hr').value,
+   vital:$('vital').value,
+   savedAt:new Date().toISOString()
+ };
+}
+
+function restoreReview(){
+ try{
+   const d=JSON.parse(localStorage.getItem('rxReviewData'));
+   if(!d) return;
+   Object.entries(d.patient||{}).forEach(([k,v])=>{if($(k))$(k).value=v||''});
+   meds=d.medications||[];
+   renderMeds();
+   (d.signals||[]).forEach(x=>{
+     const c=[...document.querySelectorAll('#screen3 input[type=checkbox]')].find(c=>c.value===x);
+     if(c) c.checked=true;
+   });
+   $('observations').value=d.observations||'';
+   $('bp').value=d.bp||'';
+   $('hr').value=d.hr||'';
+   $('vital').value=d.vital||'';
+ }catch(e){
+   console.warn(e);
+ }
+}
+
+function restart(){
+ if(confirm('Start a new patient review? This will clear current entries.')){
+   localStorage.removeItem('rxReviewData');
+   location.reload();
+ }
+}
+
+// Attach step navigation
+document.querySelectorAll('.step').forEach(el=>el.addEventListener('click',()=>setStep(+el.dataset.step)));
+
+// Initialize with clean manual entry
 renderMeds();
+restoreReview();
+checkUserSession();
 setStep(1);
 </script>
 </body>
