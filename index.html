@@ -15,11 +15,12 @@
   button, input, textarea, select { font: inherit; }
   button { cursor: pointer; }
 
-  /* Auth Overlay Screen */
+  /* Auth Overlay Screen with Medical/Clinical Background Image */
   #authOverlay {
     position: fixed;
     inset: 0;
-    background: #0b1727;
+    background: linear-gradient(135deg, rgba(11, 23, 39, 0.85), rgba(16, 36, 62, 0.88)),
+                url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat fixed;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -28,12 +29,14 @@
     overflow-y: auto;
   }
   .auth-card {
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
     width: 100%;
-    max-width: 450px;
-    padding: 34px 30px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+    max-width: 440px;
+    padding: 36px 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
     position: relative;
   }
   .auth-header {
@@ -92,7 +95,7 @@
   }
 
   .auth-group {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
   }
   .auth-group label {
     display: block;
@@ -115,27 +118,18 @@
     border-color: #1e5a8a;
     box-shadow: 0 0 0 3px rgba(30, 90, 138, 0.12);
   }
-  .input-with-btn {
-    display: flex;
-    gap: 8px;
-  }
-  .input-with-btn input {
-    flex: 1;
-  }
-  .sub-btn {
-    white-space: nowrap;
-    border: 1px solid #cbd5e1;
-    background: #f8fafc;
-    color: #1e5a8a;
-    font-weight: 700;
+  .forgot-link {
+    display: block;
+    text-align: right;
     font-size: 12px;
-    border-radius: 9px;
-    padding: 0 14px;
+    color: #1e5a8a;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 6px;
     cursor: pointer;
-    transition: background 0.15s;
   }
-  .sub-btn:hover {
-    background: #edf5ff;
+  .forgot-link:hover {
+    text-decoration: underline;
   }
   .auth-hint {
     font-size: 11px;
@@ -157,6 +151,18 @@
   }
   .auth-submit-btn:hover {
     background: #1b385e;
+  }
+
+  /* Reset Password Box Notice */
+  .reset-notice-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: #166534;
+    line-height: 1.5;
   }
 
   /* Main Workspace Styles */
@@ -285,17 +291,17 @@
 </head>
 <body>
 
-<!-- Authentication Overlay Screen: Create Account & Sign In -->
+<!-- Authentication Overlay Screen: Sign In / Create Account / Forgot Password -->
 <div id="authOverlay">
   <div class="auth-card">
     <div class="auth-header">
       <span class="auth-badge">RxRecheck Platform</span>
       <h2>RxRecheck</h2>
-      <p id="authSubtitle">Create an account with your Google Mail or sign in</p>
+      <p id="authSubtitle">Sign in with your Google Mail & Password</p>
     </div>
 
-    <!-- Toggle Tabs: Sign In / Create Account -->
-    <div class="auth-tabs">
+    <!-- Toggle Tabs (Hidden during Forgot Password) -->
+    <div class="auth-tabs" id="authTabsContainer">
       <button type="button" class="auth-tab-btn active" id="tabSignIn" onclick="switchAuthMode('signin')">Sign In</button>
       <button type="button" class="auth-tab-btn" id="tabRegister" onclick="switchAuthMode('register')">Create Account</button>
     </div>
@@ -309,14 +315,7 @@
       <div class="auth-group">
         <label for="signinPass">Password</label>
         <input type="password" id="signinPass" required autocomplete="current-password">
-      </div>
-      <div class="auth-group">
-        <label for="signinCode">Verification Code</label>
-        <div class="input-with-btn">
-          <input type="text" id="signinCode" maxlength="8" required autocomplete="one-time-code">
-          <button type="button" class="sub-btn" onclick="sendCode('signin')">Send Code</button>
-        </div>
-        <div class="auth-hint" id="signinCodeHint">Click "Send Code" to receive verification code.</div>
+        <a class="forgot-link" onclick="switchAuthMode('forgot')">Forgot password?</a>
       </div>
       <button type="submit" class="auth-submit-btn">Sign In</button>
     </form>
@@ -340,15 +339,34 @@
         <label for="regPassConfirm">Confirm Password</label>
         <input type="password" id="regPassConfirm" required autocomplete="new-password">
       </div>
-      <div class="auth-group">
-        <label for="regCode">Email Verification Code</label>
-        <div class="input-with-btn">
-          <input type="text" id="regCode" maxlength="8" required autocomplete="one-time-code">
-          <button type="button" class="sub-btn" onclick="sendCode('register')">Send Code</button>
-        </div>
-        <div class="auth-hint" id="regCodeHint">Click "Send Code" to verify your Google Mail address.</div>
-      </div>
       <button type="submit" class="auth-submit-btn">Create Account & Sign In</button>
+    </form>
+
+    <!-- 3. Forgot Password Form -->
+    <form id="formForgot" class="hidden" onsubmit="handleForgotPassword(event)">
+      <div class="auth-group">
+        <label for="forgotEmail">Registered Google Mail</label>
+        <input type="email" id="forgotEmail" required autocomplete="email">
+        <div class="auth-hint">Enter your registered Google Mail to request password reset format.</div>
+      </div>
+      <button type="submit" class="auth-submit-btn" id="forgotSubmitBtn">Send Password Reset Format</button>
+
+      <div id="resetFormatSection" class="hidden">
+        <div class="reset-notice-box" id="resetNoticeText"></div>
+        <div class="auth-group" style="margin-top:15px">
+          <label for="newPass">Enter New Password</label>
+          <input type="password" id="newPass" autocomplete="new-password">
+        </div>
+        <div class="auth-group">
+          <label for="newPassConfirm">Confirm New Password</label>
+          <input type="password" id="newPassConfirm" autocomplete="new-password">
+        </div>
+        <button type="button" class="auth-submit-btn" style="background:#166534" onclick="applyNewPassword()">Save New Password & Sign In</button>
+      </div>
+
+      <div style="text-align:center; margin-top:16px">
+        <a class="forgot-link" style="text-align:center" onclick="switchAuthMode('signin')">← Return to Sign In</a>
+      </div>
     </form>
   </div>
 </div>
@@ -586,7 +604,7 @@
         </div>
       </section>
 
-      <!-- Step 6: Stored Records (View data stored for future purpose) -->
+      <!-- Step 6: Stored Records Screen -->
       <section id="screen6" class="screen hidden">
         <div class="card">
           <h2>Stored Patient Review Records</h2>
@@ -620,47 +638,35 @@ const titles = {
 
 let meds=[]; 
 let editingIndex=-1;
-let activeVerificationCode = "";
+let resetTargetEmail = "";
 
 function $(id){return document.getElementById(id)}
 
-// Switch between "Sign In" and "Create Account"
+// Switch between "Sign In", "Create Account", and "Forgot Password"
 function switchAuthMode(mode){
+  const tabsContainer = $('authTabsContainer');
+  $('formSignIn').classList.add('hidden');
+  $('formRegister').classList.add('hidden');
+  $('formForgot').classList.add('hidden');
+
   if(mode === 'register'){
+    tabsContainer.classList.remove('hidden');
     $('tabRegister').classList.add('active');
     $('tabSignIn').classList.remove('active');
     $('formRegister').classList.remove('hidden');
-    $('formSignIn').classList.add('hidden');
     $('authSubtitle').textContent = 'Create an account with your Google Mail & Password';
+  } else if(mode === 'forgot'){
+    tabsContainer.classList.add('hidden');
+    $('formForgot').classList.remove('hidden');
+    $('resetFormatSection').classList.add('hidden');
+    $('authSubtitle').textContent = 'Reset your password via Google Mail';
   } else {
+    tabsContainer.classList.remove('hidden');
     $('tabSignIn').classList.add('active');
     $('tabRegister').classList.remove('active');
     $('formSignIn').classList.remove('hidden');
-    $('formRegister').classList.add('hidden');
     $('authSubtitle').textContent = 'Sign in with your Google Mail & Password';
   }
-}
-
-// Send verification code simulation to Google Mail
-function sendCode(formType){
-  const emailInput = formType === 'register' ? $('regEmail') : $('signinEmail');
-  const email = emailInput.value.trim();
-  const hint = formType === 'register' ? $('regCodeHint') : $('signinCodeHint');
-  const codeTarget = formType === 'register' ? $('regCode') : $('signinCode');
-
-  if(!email){
-    alert('Please enter your Google Mail address first.');
-    emailInput.focus();
-    return;
-  }
-
-  // Generate a random 6-digit code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  activeVerificationCode = code;
-  codeTarget.value = code;
-
-  hint.textContent = `Verification code sent to ${email}: ${code}`;
-  hint.style.color = "#15803d";
 }
 
 // Handle Account Creation
@@ -670,10 +676,9 @@ function handleRegister(e){
   const email = $('regEmail').value.trim().toLowerCase();
   const pass = $('regPass').value;
   const passConfirm = $('regPassConfirm').value;
-  const code = $('regCode').value.trim();
 
-  if(!name || !email || !pass || !code){
-    alert('Please complete all required fields.');
+  if(!name || !email || !pass){
+    alert('Please complete all fields.');
     return;
   }
 
@@ -687,12 +692,6 @@ function handleRegister(e){
     return;
   }
 
-  if(activeVerificationCode && code !== activeVerificationCode){
-    alert('Invalid verification code. Please check the code sent to your Google Mail.');
-    return;
-  }
-
-  // Store user in local registered accounts
   let users = [];
   try {
     users = JSON.parse(localStorage.getItem('rxRegisteredUsers') || '[]');
@@ -709,7 +708,6 @@ function handleRegister(e){
   users.push(newUser);
   localStorage.setItem('rxRegisteredUsers', JSON.stringify(users));
 
-  // Log in immediately
   sessionStorage.setItem('rxUser', JSON.stringify({ name, email }));
   applyUserSession({ name, email });
   alert(`Account successfully created for ${email}! You are now signed in.`);
@@ -720,10 +718,9 @@ function handleSignIn(e){
   e.preventDefault();
   const email = $('signinEmail').value.trim().toLowerCase();
   const pass = $('signinPass').value;
-  const code = $('signinCode').value.trim();
 
-  if(!email || !pass || !code){
-    alert('Please enter your Google Mail, Password, and Verification Code.');
+  if(!email || !pass){
+    alert('Please enter your Google Mail and Password.');
     return;
   }
 
@@ -732,21 +729,75 @@ function handleSignIn(e){
     users = JSON.parse(localStorage.getItem('rxRegisteredUsers') || '[]');
   } catch(err){ users = []; }
 
-  // Check against registered users
   const matchedUser = users.find(u => u.email === email);
 
   if(matchedUser && matchedUser.pass !== pass){
-    alert('Incorrect password. Please verify your password and try again.');
-    return;
-  }
-
-  if(activeVerificationCode && code !== activeVerificationCode){
-    alert('Invalid verification code. Please click "Send Code" to verify.');
+    alert('Incorrect password. Click "Forgot password?" if you need to reset it.');
     return;
   }
 
   const displayName = matchedUser ? matchedUser.name : email.split('@')[0];
   const user = { name: displayName, email };
+  sessionStorage.setItem('rxUser', JSON.stringify(user));
+  applyUserSession(user);
+}
+
+// Handle Forgot Password Request
+function handleForgotPassword(e){
+  e.preventDefault();
+  const email = $('forgotEmail').value.trim().toLowerCase();
+  if(!email){
+    alert('Please enter your Google Mail address.');
+    return;
+  }
+
+  resetTargetEmail = email;
+  $('resetNoticeText').innerHTML = `
+    <strong>Password Reset Request Dispatched</strong><br>
+    A password changing format has been sent to: <strong>${esc(email)}</strong>.<br>
+    Please enter your new password below to update your account credentials.
+  `;
+  $('resetFormatSection').classList.remove('hidden');
+}
+
+// Apply New Password
+function applyNewPassword(){
+  const newPass = $('newPass').value;
+  const newPassConfirm = $('newPassConfirm').value;
+
+  if(!newPass){
+    alert('Please enter a new password.');
+    return;
+  }
+  if(newPass !== newPassConfirm){
+    alert('Passwords do not match.');
+    return;
+  }
+  if(newPass.length < 6){
+    alert('Password should be at least 6 characters.');
+    return;
+  }
+
+  let users = [];
+  try {
+    users = JSON.parse(localStorage.getItem('rxRegisteredUsers') || '[]');
+  } catch(err){ users = []; }
+
+  const userIdx = users.findIndex(u => u.email === resetTargetEmail);
+  if(userIdx !== -1){
+    users[userIdx].pass = newPass;
+  } else {
+    users.push({
+      name: resetTargetEmail.split('@')[0],
+      email: resetTargetEmail,
+      pass: newPass,
+      createdAt: new Date().toISOString()
+    });
+  }
+  localStorage.setItem('rxRegisteredUsers', JSON.stringify(users));
+
+  alert('Your password has been successfully reset! Signing in now.');
+  const user = { name: resetTargetEmail.split('@')[0], email: resetTargetEmail };
   sessionStorage.setItem('rxUser', JSON.stringify(user));
   applyUserSession(user);
 }
@@ -775,13 +826,14 @@ function handleLogout(){
     sessionStorage.removeItem('rxUser');
     $('signinEmail').value = '';
     $('signinPass').value = '';
-    $('signinCode').value = '';
     $('regName').value = '';
     $('regEmail').value = '';
     $('regPass').value = '';
     $('regPassConfirm').value = '';
-    $('regCode').value = '';
-    activeVerificationCode = '';
+    $('forgotEmail').value = '';
+    $('newPass').value = '';
+    $('newPassConfirm').value = '';
+    switchAuthMode('signin');
     $('authOverlay').classList.remove('hidden');
   }
 }
