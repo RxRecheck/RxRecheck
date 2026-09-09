@@ -15,8 +15,8 @@
   button, input, textarea, select { font: inherit; }
   button { cursor: pointer; }
 
-  /* Login Overlay Screen */
-  #loginScreen {
+  /* Auth Overlay Screen */
+  #authOverlay {
     position: fixed;
     inset: 0;
     background: #0b1727;
@@ -25,50 +25,83 @@
     justify-content: center;
     z-index: 9999;
     padding: 20px;
+    overflow-y: auto;
   }
-  .login-card {
+  .auth-card {
     background: #ffffff;
-    border-radius: 18px;
+    border-radius: 20px;
     width: 100%;
-    max-width: 420px;
+    max-width: 450px;
     padding: 34px 30px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+    position: relative;
   }
-  .login-brand {
+  .auth-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
   }
-  .login-brand h2 {
-    font-size: 26px;
+  .auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1e5a8a;
+    background: #eaf3fa;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .auth-header h2 {
+    font-size: 27px;
     color: #0f2744;
-    margin: 6px 0 4px;
+    margin: 4px 0;
     font-weight: 800;
+    letter-spacing: -0.5px;
   }
-  .login-brand p {
+  .auth-header p {
     font-size: 13px;
     color: #64748b;
     margin: 0;
   }
-  .login-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #1e5a8a;
-    background: #e9f2fa;
-    border-radius: 20px;
+
+  /* Auth Tab Switcher */
+  .auth-tabs {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 22px;
+    gap: 4px;
   }
-  .login-group {
+  .auth-tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    border-radius: 9px;
+    transition: all 0.2s;
+  }
+  .auth-tab-btn.active {
+    background: #ffffff;
+    color: #0f2744;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .auth-group {
     margin-bottom: 15px;
   }
-  .login-group label {
+  .auth-group label {
     display: block;
     font-size: 12px;
     font-weight: 700;
     color: #334155;
     margin-bottom: 6px;
   }
-  .login-group input {
+  .auth-group input {
     width: 100%;
     border: 1px solid #cbd5e1;
     border-radius: 9px;
@@ -78,20 +111,18 @@
     box-sizing: border-box;
     transition: border-color 0.15s ease;
   }
-  .login-group input:focus {
+  .auth-group input:focus {
     border-color: #1e5a8a;
     box-shadow: 0 0 0 3px rgba(30, 90, 138, 0.12);
   }
-  .code-container {
+  .input-with-btn {
     display: flex;
     gap: 8px;
   }
-  .code-container input {
+  .input-with-btn input {
     flex: 1;
-    letter-spacing: 2px;
-    font-weight: 600;
   }
-  .code-btn {
+  .sub-btn {
     white-space: nowrap;
     border: 1px solid #cbd5e1;
     background: #f8fafc;
@@ -103,15 +134,15 @@
     cursor: pointer;
     transition: background 0.15s;
   }
-  .code-btn:hover {
+  .sub-btn:hover {
     background: #edf5ff;
   }
-  .code-hint {
+  .auth-hint {
     font-size: 11px;
     color: #64748b;
     margin-top: 5px;
   }
-  .login-submit-btn {
+  .auth-submit-btn {
     width: 100%;
     background: #10243e;
     color: #ffffff;
@@ -124,11 +155,11 @@
     margin-top: 10px;
     transition: background 0.2s ease;
   }
-  .login-submit-btn:hover {
+  .auth-submit-btn:hover {
     background: #1b385e;
   }
 
-  /* Main Application Styles */
+  /* Main Workspace Styles */
   .app { min-height: 100vh; display: flex; }
   .sidebar {
     width: 245px; background: #10243e; color: white; padding: 26px 18px;
@@ -254,36 +285,70 @@
 </head>
 <body>
 
-<!-- Login / Verification Overlay Screen -->
-<div id="loginScreen">
-  <div class="login-card">
-    <div class="login-brand">
-      <span class="login-badge">SECURE WORKSPACE</span>
+<!-- Authentication Overlay Screen: Create Account & Sign In -->
+<div id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-badge">RxRecheck Platform</span>
       <h2>RxRecheck</h2>
-      <p>Enter your credentials and verification code</p>
+      <p id="authSubtitle">Create an account with your Google Mail or sign in</p>
     </div>
-    <form onsubmit="handleLogin(event)">
-      <div class="login-group">
-        <label for="loginName">Full Name</label>
-        <input type="text" id="loginName" required autocomplete="name">
+
+    <!-- Toggle Tabs: Sign In / Create Account -->
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab-btn active" id="tabSignIn" onclick="switchAuthMode('signin')">Sign In</button>
+      <button type="button" class="auth-tab-btn" id="tabRegister" onclick="switchAuthMode('register')">Create Account</button>
+    </div>
+
+    <!-- 1. Sign In Form -->
+    <form id="formSignIn" onsubmit="handleSignIn(event)">
+      <div class="auth-group">
+        <label for="signinEmail">Google Mail (Gmail)</label>
+        <input type="email" id="signinEmail" required autocomplete="email">
       </div>
-      <div class="login-group">
-        <label for="loginEmail">Email Address</label>
-        <input type="email" id="loginEmail" required autocomplete="email">
+      <div class="auth-group">
+        <label for="signinPass">Password</label>
+        <input type="password" id="signinPass" required autocomplete="current-password">
       </div>
-      <div class="login-group">
-        <label for="loginPass">Password</label>
-        <input type="password" id="loginPass" required autocomplete="current-password">
-      </div>
-      <div class="login-group">
-        <label for="loginCode">Verification Code</label>
-        <div class="code-container">
-          <input type="text" id="loginCode" maxlength="8" required autocomplete="one-time-code">
-          <button type="button" class="code-btn" onclick="generateDemoCode()">Get Code</button>
+      <div class="auth-group">
+        <label for="signinCode">Verification Code</label>
+        <div class="input-with-btn">
+          <input type="text" id="signinCode" maxlength="8" required autocomplete="one-time-code">
+          <button type="button" class="sub-btn" onclick="sendCode('signin')">Send Code</button>
         </div>
-        <div class="code-hint" id="codeHint">Click "Get Code" or type your assigned verification code.</div>
+        <div class="auth-hint" id="signinCodeHint">Click "Send Code" to receive verification code.</div>
       </div>
-      <button type="submit" class="login-submit-btn">Verify & Sign In</button>
+      <button type="submit" class="auth-submit-btn">Sign In</button>
+    </form>
+
+    <!-- 2. Create Account Form -->
+    <form id="formRegister" class="hidden" onsubmit="handleRegister(event)">
+      <div class="auth-group">
+        <label for="regName">Full Name</label>
+        <input type="text" id="regName" required autocomplete="name">
+      </div>
+      <div class="auth-group">
+        <label for="regEmail">Google Mail (Gmail Address)</label>
+        <input type="email" id="regEmail" required autocomplete="email">
+        <div class="auth-hint">Enter your personal or institutional Google account address</div>
+      </div>
+      <div class="auth-group">
+        <label for="regPass">Create Password</label>
+        <input type="password" id="regPass" required autocomplete="new-password">
+      </div>
+      <div class="auth-group">
+        <label for="regPassConfirm">Confirm Password</label>
+        <input type="password" id="regPassConfirm" required autocomplete="new-password">
+      </div>
+      <div class="auth-group">
+        <label for="regCode">Email Verification Code</label>
+        <div class="input-with-btn">
+          <input type="text" id="regCode" maxlength="8" required autocomplete="one-time-code">
+          <button type="button" class="sub-btn" onclick="sendCode('register')">Send Code</button>
+        </div>
+        <div class="auth-hint" id="regCodeHint">Click "Send Code" to verify your Google Mail address.</div>
+      </div>
+      <button type="submit" class="auth-submit-btn">Create Account & Sign In</button>
     </form>
   </div>
 </div>
@@ -521,7 +586,7 @@
         </div>
       </section>
 
-      <!-- Step 6: Stored Records Screen -->
+      <!-- Step 6: Stored Records (View data stored for future purpose) -->
       <section id="screen6" class="screen hidden">
         <div class="card">
           <h2>Stored Patient Review Records</h2>
@@ -555,62 +620,169 @@ const titles = {
 
 let meds=[]; 
 let editingIndex=-1;
+let activeVerificationCode = "";
 
 function $(id){return document.getElementById(id)}
 
-// Quick Code Generator for Demo / Testing
-function generateDemoCode(){
-  const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-  $('loginCode').value = randomCode;
-  $('codeHint').textContent = `Generated code: ${randomCode} (Ready to verify)`;
-  $('codeHint').style.color = "#166534";
+// Switch between "Sign In" and "Create Account"
+function switchAuthMode(mode){
+  if(mode === 'register'){
+    $('tabRegister').classList.add('active');
+    $('tabSignIn').classList.remove('active');
+    $('formRegister').classList.remove('hidden');
+    $('formSignIn').classList.add('hidden');
+    $('authSubtitle').textContent = 'Create an account with your Google Mail & Password';
+  } else {
+    $('tabSignIn').classList.add('active');
+    $('tabRegister').classList.remove('active');
+    $('formSignIn').classList.remove('hidden');
+    $('formRegister').classList.add('hidden');
+    $('authSubtitle').textContent = 'Sign in with your Google Mail & Password';
+  }
 }
 
-// Authentication Handling
-function handleLogin(e){
-  e.preventDefault();
-  const name=$('loginName').value.trim();
-  const email=$('loginEmail').value.trim();
-  const pass=$('loginPass').value;
-  const code=$('loginCode').value.trim();
-  if(!name || !email || !pass || !code){
-    alert('Please enter your Name, Email, Password, and Verification Code.');
+// Send verification code simulation to Google Mail
+function sendCode(formType){
+  const emailInput = formType === 'register' ? $('regEmail') : $('signinEmail');
+  const email = emailInput.value.trim();
+  const hint = formType === 'register' ? $('regCodeHint') : $('signinCodeHint');
+  const codeTarget = formType === 'register' ? $('regCode') : $('signinCode');
+
+  if(!email){
+    alert('Please enter your Google Mail address first.');
+    emailInput.focus();
     return;
   }
-  const user={name, email};
+
+  // Generate a random 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  activeVerificationCode = code;
+  codeTarget.value = code;
+
+  hint.textContent = `Verification code sent to ${email}: ${code}`;
+  hint.style.color = "#15803d";
+}
+
+// Handle Account Creation
+function handleRegister(e){
+  e.preventDefault();
+  const name = $('regName').value.trim();
+  const email = $('regEmail').value.trim().toLowerCase();
+  const pass = $('regPass').value;
+  const passConfirm = $('regPassConfirm').value;
+  const code = $('regCode').value.trim();
+
+  if(!name || !email || !pass || !code){
+    alert('Please complete all required fields.');
+    return;
+  }
+
+  if(pass !== passConfirm){
+    alert('Passwords do not match. Please re-enter your password.');
+    return;
+  }
+
+  if(pass.length < 6){
+    alert('Password should be at least 6 characters.');
+    return;
+  }
+
+  if(activeVerificationCode && code !== activeVerificationCode){
+    alert('Invalid verification code. Please check the code sent to your Google Mail.');
+    return;
+  }
+
+  // Store user in local registered accounts
+  let users = [];
+  try {
+    users = JSON.parse(localStorage.getItem('rxRegisteredUsers') || '[]');
+  } catch(err){ users = []; }
+
+  if(users.some(u => u.email === email)){
+    alert('An account with this Google Mail already exists. Please Sign In.');
+    switchAuthMode('signin');
+    $('signinEmail').value = email;
+    return;
+  }
+
+  const newUser = { name, email, pass, createdAt: new Date().toISOString() };
+  users.push(newUser);
+  localStorage.setItem('rxRegisteredUsers', JSON.stringify(users));
+
+  // Log in immediately
+  sessionStorage.setItem('rxUser', JSON.stringify({ name, email }));
+  applyUserSession({ name, email });
+  alert(`Account successfully created for ${email}! You are now signed in.`);
+}
+
+// Handle Sign In
+function handleSignIn(e){
+  e.preventDefault();
+  const email = $('signinEmail').value.trim().toLowerCase();
+  const pass = $('signinPass').value;
+  const code = $('signinCode').value.trim();
+
+  if(!email || !pass || !code){
+    alert('Please enter your Google Mail, Password, and Verification Code.');
+    return;
+  }
+
+  let users = [];
+  try {
+    users = JSON.parse(localStorage.getItem('rxRegisteredUsers') || '[]');
+  } catch(err){ users = []; }
+
+  // Check against registered users
+  const matchedUser = users.find(u => u.email === email);
+
+  if(matchedUser && matchedUser.pass !== pass){
+    alert('Incorrect password. Please verify your password and try again.');
+    return;
+  }
+
+  if(activeVerificationCode && code !== activeVerificationCode){
+    alert('Invalid verification code. Please click "Send Code" to verify.');
+    return;
+  }
+
+  const displayName = matchedUser ? matchedUser.name : email.split('@')[0];
+  const user = { name: displayName, email };
   sessionStorage.setItem('rxUser', JSON.stringify(user));
   applyUserSession(user);
 }
 
 function checkUserSession(){
   try {
-    const raw=sessionStorage.getItem('rxUser');
+    const raw = sessionStorage.getItem('rxUser');
     if(raw){
-      const u=JSON.parse(raw);
+      const u = JSON.parse(raw);
       applyUserSession(u);
     } else {
-      $('loginScreen').classList.remove('hidden');
+      $('authOverlay').classList.remove('hidden');
     }
   } catch(e){
-    $('loginScreen').classList.remove('hidden');
+    $('authOverlay').classList.remove('hidden');
   }
 }
 
 function applyUserSession(u){
-  $('userBadge').textContent=u.name ? `Clinician: ${u.name}` : 'Signed In';
-  $('loginScreen').classList.add('hidden');
+  $('userBadge').textContent = u.name ? `${u.name} (${u.email || 'Google Mail'})` : 'Signed In';
+  $('authOverlay').classList.add('hidden');
 }
 
 function handleLogout(){
   if(confirm('Are you sure you want to sign out?')){
     sessionStorage.removeItem('rxUser');
-    $('loginName').value='';
-    $('loginEmail').value='';
-    $('loginPass').value='';
-    $('loginCode').value='';
-    $('codeHint').textContent='Click "Get Code" or type your assigned verification code.';
-    $('codeHint').style.color='#64748b';
-    $('loginScreen').classList.remove('hidden');
+    $('signinEmail').value = '';
+    $('signinPass').value = '';
+    $('signinCode').value = '';
+    $('regName').value = '';
+    $('regEmail').value = '';
+    $('regPass').value = '';
+    $('regPassConfirm').value = '';
+    $('regCode').value = '';
+    activeVerificationCode = '';
+    $('authOverlay').classList.remove('hidden');
   }
 }
 
